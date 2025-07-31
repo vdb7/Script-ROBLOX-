@@ -26,8 +26,8 @@ Corner.Parent = FloatingButton
 
 local MenuFrame = Instance.new("Frame")
 MenuFrame.Name = "MenuFrame"
-MenuFrame.Size = UDim2.new(0, 280, 0, 350)
-MenuFrame.Position = UDim2.new(0, 90, 0.5, -175)
+MenuFrame.Size = UDim2.new(0, 280, 0, 400)
+MenuFrame.Position = UDim2.new(0, 90, 0.5, -200)
 MenuFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MenuFrame.BackgroundTransparency = 0.1
 MenuFrame.BorderSizePixel = 0
@@ -82,7 +82,7 @@ local ScrollingFrame = Instance.new("ScrollingFrame")
 ScrollingFrame.Size = UDim2.new(1, -10, 1, -50)
 ScrollingFrame.Position = UDim2.new(0, 5, 0, 45)
 ScrollingFrame.BackgroundTransparency = 1
-ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 350)
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 400)
 ScrollingFrame.ScrollBarThickness = 6
 ScrollingFrame.Parent = MenuFrame
 
@@ -110,7 +110,8 @@ end
 local ESPButton = createButton("ESPButton", UDim2.new(0, 10, 0, 10), "ESP: OFF")
 local JumpButton = createButton("JumpButton", UDim2.new(0, 10, 0, 55), "INFINITE JUMP: OFF")
 local HealthButton = createButton("HealthButton", UDim2.new(0, 10, 0, 155), "HEALTH 9999: OFF")
-local DeveloperButton = createButton("DeveloperButton", UDim2.new(0, 10, 0, 240), "DEVELOPER", Color3.fromRGB(100, 0, 200))
+local FreeItemsButton = createButton("FreeItemsButton", UDim2.new(0, 10, 0, 200), "FREE ITEMS: OFF")
+local DeveloperButton = createButton("DeveloperButton", UDim2.new(0, 10, 0, 285), "DEVELOPER", Color3.fromRGB(100, 0, 200))
 
 local SpeedFrame = Instance.new("Frame")
 SpeedFrame.Name = "SpeedFrame"
@@ -190,9 +191,11 @@ local espEnabled = false
 local jumpEnabled = false
 local speedEnabled = false
 local healthEnabled = false
+local freeItemsEnabled = false
 local currentSpeed = 16
 local espBoxes = {}
 local speedDragging = false
+local originalHealth = nil
 
 local colors = {
     Color3.fromRGB(255, 0, 0), Color3.fromRGB(0, 255, 0), Color3.fromRGB(0, 0, 255),
@@ -266,6 +269,104 @@ HealthButton.MouseButton1Click:Connect(function()
     healthEnabled = not healthEnabled
     HealthButton.Text = "HEALTH 9999: "..(healthEnabled and "ON" or "OFF")
     HealthButton.BackgroundColor3 = healthEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
+    
+    local localPlayer = Players.LocalPlayer
+    if localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
+        if healthEnabled then
+            originalHealth = localPlayer.Character.Humanoid.MaxHealth
+            local humanoid = localPlayer.Character.Humanoid
+            
+            humanoid.MaxHealth = 9999
+            wait(0.1)
+            humanoid.Health = 9999
+            
+            local connection
+            connection = humanoid.HealthChanged:Connect(function(health)
+                if healthEnabled and health < 9999 then
+                    humanoid.Health = 9999
+                end
+            end)
+            
+            humanoid.AncestryChanged:Connect(function()
+                if connection then
+                    connection:Disconnect()
+                end
+            end)
+        else
+            if originalHealth then
+                localPlayer.Character.Humanoid.MaxHealth = originalHealth
+                localPlayer.Character.Humanoid.Health = originalHealth
+            end
+        end
+    end
+end)
+
+FreeItemsButton.MouseButton1Click:Connect(function()
+    freeItemsEnabled = not freeItemsEnabled
+    FreeItemsButton.Text = "FREE ITEMS: "..(freeItemsEnabled and "ON" or "OFF")
+    FreeItemsButton.BackgroundColor3 = freeItemsEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
+    
+    if freeItemsEnabled then
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local MarketplaceService = game:GetService("MarketplaceService")
+        
+        local function interceptRemoteEvents()
+            for _, remote in pairs(ReplicatedStorage:GetDescendants()) do
+                if remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction") then
+                    local name = remote.Name:lower()
+                    if name:find("buy") or name:find("purchase") or name:find("shop") or name:find("store") then
+                        local originalFireServer = remote.FireServer
+                        local originalInvokeServer = remote.InvokeServer
+                        
+                        if remote:IsA("RemoteEvent") then
+                            remote.FireServer = function(self, ...)
+                                local args = {...}
+                                for i, arg in pairs(args) do
+                                    if type(arg) == "number" and arg > 0 then
+                                        args[i] = 0
+                                    end
+                                end
+                                return originalFireServer(self, unpack(args))
+                            end
+                        elseif remote:IsA("RemoteFunction") then
+                            remote.InvokeServer = function(self, ...)
+                                local args = {...}
+                                for i, arg in pairs(args) do
+                                    if type(arg) == "number" and arg > 0 then
+                                        args[i] = 0
+                                    end
+                                end
+                                return originalInvokeServer(self, unpack(args))
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        
+        interceptRemoteEvents()
+        
+        ReplicatedStorage.DescendantAdded:Connect(function(descendant)
+            if freeItemsEnabled then
+                interceptRemoteEvents()
+            end
+        end)
+        
+        local originalPromptPurchase = MarketplaceService.PromptPurchase
+        MarketplaceService.PromptPurchase = function(...)
+            return
+        end
+        
+        local originalPromptGamePassPurchase = MarketplaceService.PromptGamePassPurchase
+        MarketplaceService.PromptGamePassPurchase = function(...)
+            return
+        end
+        
+        local originalPromptProductPurchase = MarketplaceService.PromptProductPurchase
+        MarketplaceService.PromptProductPurchase = function(...)
+            return
+        end
+    end
 end)
 
 SpeedToggle.MouseButton1Click:Connect(function()
@@ -324,12 +425,17 @@ RunService.Heartbeat:Connect(function()
         if speedEnabled then
             localPlayer.Character.Humanoid.WalkSpeed = currentSpeed
         else
-            localPlayer.Character.Humanoid.WalkSpeed = 16
+            localPlayer.Character.Humanoid.WalkSpeed = 150
         end
         
         if healthEnabled then
-            localPlayer.Character.Humanoid.MaxHealth = 9999
-            localPlayer.Character.Humanoid.Health = 9999
+            local humanoid = localPlayer.Character.Humanoid
+            if humanoid.Health < 9999 then
+                humanoid.Health = 9999
+            end
+            if humanoid.MaxHealth < 9999 then
+                humanoid.MaxHealth = 9999
+            end
         end
     end
 end)
