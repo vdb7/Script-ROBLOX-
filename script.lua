@@ -174,7 +174,7 @@ local colorIndex = 1
 
 local function updateSpeedDisplay()
     SpeedLabel.Text = "SPEED: "..math.floor(currentSpeed)
-    SpeedFill.Size = UDim2.new(currentSpeed/50, 0, 1, 0)
+    SpeedFill.Size = UDim2.new(currentSpeed/100, 0, 1, 0)
 end
 
 local function createESP(player)
