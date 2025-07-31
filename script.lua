@@ -1,277 +1,93 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
-local DeltaGUI = Instance.new("ScreenGui")
-DeltaGUI.Name = "DeltaGUI"
-DeltaGUI.Parent = game.CoreGui
-DeltaGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+local MiniGUI = Instance.new("ScreenGui")
+MiniGUI.Name = "MiniDeltaGUI"
+MiniGUI.Parent = game.CoreGui
+MiniGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 400, 0, 500)
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
-MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-MainFrame.BackgroundTransparency = 0.2
+MainFrame.Size = UDim2.new(0, 50, 0, 50)
+MainFrame.Position = UDim2.new(0, 10, 0, 200)
+MainFrame.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+MainFrame.BackgroundTransparency = 0.3
 MainFrame.BorderSizePixel = 0
-MainFrame.ClipsDescendants = true
-MainFrame.Parent = DeltaGUI
-
-local dragging, dragInput, dragStart, startPos
-MainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-MainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
-local BackgroundImage = Instance.new("ImageLabel")
-BackgroundImage.Name = "BackgroundImage"
-BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
-BackgroundImage.Position = UDim2.new(0, 0, 0, 0)
-BackgroundImage.BackgroundTransparency = 1
-BackgroundImage.Image = "rbxassetid://75797852451386"
-BackgroundImage.ImageColor3 = Color3.fromRGB(0, 150, 255)
-BackgroundImage.ImageTransparency = 0.9
-BackgroundImage.ScaleType = Enum.ScaleType.Tile
-BackgroundImage.TileSize = UDim2.new(0, 200, 0, 200)
-BackgroundImage.Parent = MainFrame
-
-local TitleBar = Instance.new("Frame")
-TitleBar.Name = "TitleBar"
-TitleBar.Size = UDim2.new(1, 0, 0, 40)
-TitleBar.Position = UDim2.new(0, 0, 0, 0)
-TitleBar.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-TitleBar.BackgroundTransparency = 0.3
-TitleBar.BorderSizePixel = 0
-TitleBar.Parent = MainFrame
+MainFrame.Parent = MiniGUI
 
 local Logo = Instance.new("ImageLabel")
 Logo.Name = "Logo"
-Logo.Size = UDim2.new(0, 30, 0, 30)
-Logo.Position = UDim2.new(0, 10, 0, 5)
+Logo.Size = UDim2.new(1, 0, 1, 0)
 Logo.BackgroundTransparency = 1
 Logo.Image = "rbxassetid://75797852451386"
-Logo.Parent = TitleBar
+Logo.Parent = MainFrame
 
-local Title = Instance.new("TextLabel")
-Title.Name = "Title"
-Title.Size = UDim2.new(0, 200, 0, 30)
-Title.Position = UDim2.new(0, 50, 0, 5)
-Title.BackgroundTransparency = 1
-Title.Text = "DELTA HUB"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 20
-Title.Font = Enum.Font.GothamBold
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = TitleBar
+local ExpandedFrame = Instance.new("Frame")
+ExpandedFrame.Name = "ExpandedFrame"
+ExpandedFrame.Size = UDim2.new(0, 200, 0, 150)
+ExpandedFrame.Position = UDim2.new(1, 5, 0, 0)
+ExpandedFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+ExpandedFrame.BackgroundTransparency = 0.2
+ExpandedFrame.BorderSizePixel = 0
+ExpandedFrame.Visible = false
+ExpandedFrame.Parent = MainFrame
 
-local CloseButton = Instance.new("TextButton")
-CloseButton.Name = "CloseButton"
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -40, 0, 5)
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-CloseButton.BackgroundTransparency = 0.5
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.Text = "X"
-CloseButton.Font = Enum.Font.GothamBold
-CloseButton.TextSize = 16
-CloseButton.Parent = TitleBar
+local AimbotBtn = Instance.new("TextButton")
+AimbotBtn.Name = "AimbotBtn"
+AimbotBtn.Size = UDim2.new(1, 0, 0, 40)
+AimbotBtn.Position = UDim2.new(0, 0, 0, 0)
+AimbotBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+AimbotBtn.BackgroundTransparency = 0.5
+AimbotBtn.Text = "AIMBOT: OFF"
+AimbotBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AimbotBtn.Font = Enum.Font.Gotham
+AimbotBtn.TextSize = 14
+AimbotBtn.Parent = ExpandedFrame
 
-CloseButton.MouseButton1Click:Connect(function()
-    DeltaGUI:Destroy()
-end)
+local ESPBtn = Instance.new("TextButton")
+ESPBtn.Name = "ESPBtn"
+ESPBtn.Size = UDim2.new(1, 0, 0, 40)
+ESPBtn.Position = UDim2.new(0, 0, 0, 50)
+ESPBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+ESPBtn.BackgroundTransparency = 0.5
+ESPBtn.Text = "ESP: OFF"
+ESPBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ESPBtn.Font = Enum.Font.Gotham
+ESPBtn.TextSize = 14
+ESPBtn.Parent = ExpandedFrame
 
-local function ButtonEffect(button)
-    button.MouseEnter:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.1), {BackgroundTransparency = 0.3}):Play()
-    end)
-    button.MouseLeave:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.1), {BackgroundTransparency = 0.5}):Play()
-    end)
-    button.MouseButton1Down:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.1), {BackgroundTransparency = 0.2}):Play()
-    end)
-    button.MouseButton1Up:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.1), {BackgroundTransparency = 0.3}):Play()
-    end)
-end
+local MagicBulletBtn = Instance.new("TextButton")
+MagicBulletBtn.Name = "MagicBulletBtn"
+MagicBulletBtn.Size = UDim2.new(1, 0, 0, 40)
+MagicBulletBtn.Position = UDim2.new(0, 0, 0, 100)
+MagicBulletBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+MagicBulletBtn.BackgroundTransparency = 0.5
+MagicBulletBtn.Text = "MAGIC BULLET: OFF"
+MagicBulletBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MagicBulletBtn.Font = Enum.Font.Gotham
+MagicBulletBtn.TextSize = 14
+MagicBulletBtn.Parent = ExpandedFrame
 
-local TabButtonsFrame = Instance.new("Frame")
-TabButtonsFrame.Name = "TabButtonsFrame"
-TabButtonsFrame.Size = UDim2.new(1, -20, 0, 40)
-TabButtonsFrame.Position = UDim2.new(0, 10, 0, 50)
-TabButtonsFrame.BackgroundTransparency = 1
-TabButtonsFrame.Parent = MainFrame
-
-local Tabs = {"Aimbot", "ESP", "Visuals", "Misc"}
-local TabButtons = {}
-
-for i, tabName in ipairs(Tabs) do
-    local TabButton = Instance.new("TextButton")
-    TabButton.Name = tabName.."Tab"
-    TabButton.Size = UDim2.new(0.2, -5, 1, 0)
-    TabButton.Position = UDim2.new(0.2 * (i-1), 0, 0, 0)
-    TabButton.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-    TabButton.BackgroundTransparency = i == 1 and 0.5 or 0.8
-    TabButton.Text = tabName
-    TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TabButton.Font = Enum.Font.Gotham
-    TabButton.TextSize = 14
-    TabButton.Parent = TabButtonsFrame
-    ButtonEffect(TabButton)
-    table.insert(TabButtons, TabButton)
-end
-
-local TabContentFrame = Instance.new("Frame")
-TabContentFrame.Name = "TabContentFrame"
-TabContentFrame.Size = UDim2.new(1, -20, 1, -100)
-TabContentFrame.Position = UDim2.new(0, 10, 0, 100)
-TabContentFrame.BackgroundTransparency = 1
-TabContentFrame.Parent = MainFrame
-
-local AimbotTab = Instance.new("Frame")
-AimbotTab.Name = "AimbotTab"
-AimbotTab.Size = UDim2.new(1, 0, 1, 0)
-AimbotTab.BackgroundTransparency = 1
-AimbotTab.Visible = true
-AimbotTab.Parent = TabContentFrame
-
-local AimbotToggle = Instance.new("TextButton")
-AimbotToggle.Name = "AimbotToggle"
-AimbotToggle.Size = UDim2.new(1, 0, 0, 40)
-AimbotToggle.Position = UDim2.new(0, 0, 0, 10)
-AimbotToggle.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-AimbotToggle.BackgroundTransparency = 0.5
-AimbotToggle.Text = "AIMBOT: OFF"
-AimbotToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-AimbotToggle.Font = Enum.Font.Gotham
-AimbotToggle.TextSize = 16
-AimbotToggle.Parent = AimbotTab
-ButtonEffect(AimbotToggle)
-
-local HeadshotToggle = Instance.new("TextButton")
-HeadshotToggle.Name = "HeadshotToggle"
-HeadshotToggle.Size = UDim2.new(1, 0, 0, 40)
-HeadshotToggle.Position = UDim2.new(0, 0, 0, 60)
-HeadshotToggle.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-HeadshotToggle.BackgroundTransparency = 0.5
-HeadshotToggle.Text = "HEADSHOT: ON"
-HeadshotToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-HeadshotToggle.Font = Enum.Font.Gotham
-HeadshotToggle.TextSize = 16
-HeadshotToggle.Parent = AimbotTab
-ButtonEffect(HeadshotToggle)
-
-local SmoothToggle = Instance.new("TextButton")
-SmoothToggle.Name = "SmoothToggle"
-SmoothToggle.Size = UDim2.new(1, 0, 0, 40)
-SmoothToggle.Position = UDim2.new(0, 0, 0, 110)
-SmoothToggle.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-SmoothToggle.BackgroundTransparency = 0.5
-SmoothToggle.Text = "SMOOTH AIM: ON"
-SmoothToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-SmoothToggle.Font = Enum.Font.Gotham
-SmoothToggle.TextSize = 16
-SmoothToggle.Parent = AimbotTab
-ButtonEffect(SmoothToggle)
-
-local ESPTab = Instance.new("Frame")
-ESPTab.Name = "ESPTab"
-ESPTab.Size = UDim2.new(1, 0, 1, 0)
-ESPTab.BackgroundTransparency = 1
-ESPTab.Visible = false
-ESPTab.Parent = TabContentFrame
-
-local ESPToggle = Instance.new("TextButton")
-ESPToggle.Name = "ESPToggle"
-ESPToggle.Size = UDim2.new(1, 0, 0, 40)
-ESPToggle.Position = UDim2.new(0, 0, 0, 10)
-ESPToggle.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-ESPToggle.BackgroundTransparency = 0.5
-ESPToggle.Text = "ESP: OFF"
-ESPToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-ESPToggle.Font = Enum.Font.Gotham
-ESPToggle.TextSize = 16
-ESPToggle.Parent = ESPTab
-ButtonEffect(ESPToggle)
-
-local VisualsTab = Instance.new("Frame")
-VisualsTab.Name = "VisualsTab"
-VisualsTab.Size = UDim2.new(1, 0, 1, 0)
-VisualsTab.BackgroundTransparency = 1
-VisualsTab.Visible = false
-VisualsTab.Parent = TabContentFrame
-
-local MiscTab = Instance.new("Frame")
-MiscTab.Name = "MiscTab"
-MiscTab.Size = UDim2.new(1, 0, 1, 0)
-MiscTab.BackgroundTransparency = 1
-MiscTab.Visible = false
-MiscTab.Parent = TabContentFrame
-
-for i, tabButton in ipairs(TabButtons) do
-    tabButton.MouseButton1Click:Connect(function()
-        for _, content in ipairs(TabContentFrame:GetChildren()) do
-            content.Visible = false
-        end
-        for _, button in ipairs(TabButtons) do
-            button.BackgroundTransparency = 0.8
-        end
-        tabButton.BackgroundTransparency = 0.5
-        TabContentFrame:FindFirstChild(Tabs[i].."Tab").Visible = true
-    end)
-end
-
-MainFrame.ClipsDescendants = true
-MainFrame.BackgroundTransparency = 1
-TweenService:Create(MainFrame, TweenInfo.new(0.5), {BackgroundTransparency = 0.2}):Play()
-
-local aimbotEnabled = false
-local headshotEnabled = true
-local smoothAimEnabled = true
 local espEnabled = false
+local aimbotEnabled = false
+local magicBulletEnabled = false
 local espBoxes = {}
 
-AimbotToggle.MouseButton1Click:Connect(function()
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        ExpandedFrame.Visible = not ExpandedFrame.Visible
+    end
+end)
+
+AimbotBtn.MouseButton1Click:Connect(function()
     aimbotEnabled = not aimbotEnabled
-    AimbotToggle.Text = "AIMBOT: "..(aimbotEnabled and "ON" or "OFF")
+    AimbotBtn.Text = "AIMBOT: "..(aimbotEnabled and "ON" or "OFF")
 end)
 
-HeadshotToggle.MouseButton1Click:Connect(function()
-    headshotEnabled = not headshotEnabled
-    HeadshotToggle.Text = "HEADSHOT: "..(headshotEnabled and "ON" or "OFF")
-end)
-
-SmoothToggle.MouseButton1Click:Connect(function()
-    smoothAimEnabled = not smoothAimEnabled
-    SmoothToggle.Text = "SMOOTH AIM: "..(smoothAimEnabled and "ON" or "OFF")
-end)
-
-ESPToggle.MouseButton1Click:Connect(function()
+ESPBtn.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
-    ESPToggle.Text = "ESP: "..(espEnabled and "ON" or "OFF")
+    ESPBtn.Text = "ESP: "..(espEnabled and "ON" or "OFF")
     if espEnabled then
         for _, player in ipairs(Players:GetPlayers()) do
             if player ~= Players.LocalPlayer and player.Character then
@@ -284,6 +100,11 @@ ESPToggle.MouseButton1Click:Connect(function()
         end
         espBoxes = {}
     end
+end)
+
+MagicBulletBtn.MouseButton1Click:Connect(function()
+    magicBulletEnabled = not magicBulletEnabled
+    MagicBulletBtn.Text = "MAGIC BULLET: "..(magicBulletEnabled and "ON" or "OFF")
 end)
 
 function createESP(player)
@@ -315,15 +136,6 @@ function createESP(player)
     end)
 end
 
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function(char)
-        if espEnabled then
-            wait(1)
-            createESP(player)
-        end
-    end)
-end)
-
 RunService.RenderStepped:Connect(function()
     if aimbotEnabled then
         local closestPlayer = nil
@@ -333,7 +145,7 @@ RunService.RenderStepped:Connect(function()
         
         for _, player in ipairs(Players:GetPlayers()) do
             if player ~= localPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-                local targetPart = headshotEnabled and player.Character:FindFirstChild("Head") or player.Character:FindFirstChild("HumanoidRootPart")
+                local targetPart = player.Character:FindFirstChild("Head") or player.Character:FindFirstChild("HumanoidRootPart")
                 if targetPart then
                     local screenPoint = camera:WorldToViewportPoint(targetPart.Position)
                     if screenPoint.Z > 0 then
@@ -348,18 +160,47 @@ RunService.RenderStepped:Connect(function()
         end
         
         if closestPlayer and closestPlayer.Character then
-            local targetPart = headshotEnabled and closestPlayer.Character:FindFirstChild("Head") or closestPlayer.Character:FindFirstChild("HumanoidRootPart")
+            local targetPart = closestPlayer.Character:FindFirstChild("Head") or closestPlayer.Character:FindFirstChild("HumanoidRootPart")
             if targetPart then
-                if smoothAimEnabled then
-                    local currentCFrame = camera.CFrame
-                    local targetCFrame = CFrame.new(camera.CFrame.Position, targetPart.Position)
-                    camera.CFrame = currentCFrame:Lerp(targetCFrame, 0.3)
-                else
-                    camera.CFrame = CFrame.new(camera.CFrame.Position, targetPart.Position)
+                camera.CFrame = CFrame.new(camera.CFrame.Position, targetPart.Position)
+            end
+        end
+    end
+    
+    if magicBulletEnabled then
+        local localPlayer = Players.LocalPlayer
+        if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= localPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                    local targetPart = player.Character:FindFirstChild("Head") or player.Character:FindFirstChild("HumanoidRootPart")
+                    if targetPart then
+                        local bullets = workspace:FindPartsInRegion3(
+                            Region3.new(
+                                localPlayer.Character.HumanoidRootPart.Position - Vector3.new(0.5, 0.5, 0.5),
+                                localPlayer.Character.HumanoidRootPart.Position + Vector3.new(0.5, 0.5, 0.5)
+                            ),
+                            nil,
+                            100
+                        )
+                        for _, bullet in ipairs(bullets) do
+                            if bullet:IsA("BasePart") and bullet.Velocity.Magnitude > 50 then
+                                bullet.Velocity = (targetPart.Position - bullet.Position).Unit * bullet.Velocity.Magnitude
+                            end
+                        end
+                    end
                 end
             end
         end
     end
+end)
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(char)
+        if espEnabled then
+            wait(1)
+            createESP(player)
+        end
+    end)
 end)
 
 for _, player in ipairs(Players:GetPlayers()) do
