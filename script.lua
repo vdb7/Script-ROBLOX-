@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local StarterGui = game:GetService("StarterGui")
 
 local DeltaGUI = Instance.new("ScreenGui")
 DeltaGUI.Name = "HackFormHyperGUI"
@@ -25,8 +26,8 @@ Corner.Parent = FloatingButton
 
 local MenuFrame = Instance.new("Frame")
 MenuFrame.Name = "MenuFrame"
-MenuFrame.Size = UDim2.new(0, 280, 0, 300)
-MenuFrame.Position = UDim2.new(0, 90, 0.5, -150)
+MenuFrame.Size = UDim2.new(0, 280, 0, 350)
+MenuFrame.Position = UDim2.new(0, 90, 0.5, -175)
 MenuFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MenuFrame.BackgroundTransparency = 0.1
 MenuFrame.BorderSizePixel = 0
@@ -81,7 +82,7 @@ local ScrollingFrame = Instance.new("ScrollingFrame")
 ScrollingFrame.Size = UDim2.new(1, -10, 1, -50)
 ScrollingFrame.Position = UDim2.new(0, 5, 0, 45)
 ScrollingFrame.BackgroundTransparency = 1
-ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 300)
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 350)
 ScrollingFrame.ScrollBarThickness = 6
 ScrollingFrame.Parent = MenuFrame
 
@@ -108,11 +109,12 @@ end
 
 local ESPButton = createButton("ESPButton", UDim2.new(0, 10, 0, 10), "ESP: OFF")
 local JumpButton = createButton("JumpButton", UDim2.new(0, 10, 0, 55), "INFINITE JUMP: OFF")
-local DeveloperButton = createButton("DeveloperButton", UDim2.new(0, 10, 0, 190), "DEVELOPER", Color3.fromRGB(100, 0, 200))
+local HealthButton = createButton("HealthButton", UDim2.new(0, 10, 0, 155), "HEALTH 9999: OFF")
+local DeveloperButton = createButton("DeveloperButton", UDim2.new(0, 10, 0, 240), "DEVELOPER", Color3.fromRGB(100, 0, 200))
 
 local SpeedFrame = Instance.new("Frame")
 SpeedFrame.Name = "SpeedFrame"
-SpeedFrame.Size = UDim2.new(1, -20, 0, 50)
+SpeedFrame.Size = UDim2.new(1, -20, 0, 70)
 SpeedFrame.Position = UDim2.new(0, 10, 0, 100)
 SpeedFrame.BackgroundTransparency = 1
 SpeedFrame.Parent = ScrollingFrame
@@ -150,6 +152,17 @@ local SpeedFillCorner = Instance.new("UICorner")
 SpeedFillCorner.CornerRadius = UDim.new(0, 10)
 SpeedFillCorner.Parent = SpeedFill
 
+local SpeedHandle = Instance.new("Frame")
+SpeedHandle.Size = UDim2.new(0, 20, 1, 0)
+SpeedHandle.Position = UDim2.new(0, 0, 0, 0)
+SpeedHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+SpeedHandle.BorderSizePixel = 0
+SpeedHandle.Parent = SpeedSlider
+
+local SpeedHandleCorner = Instance.new("UICorner")
+SpeedHandleCorner.CornerRadius = UDim.new(0, 10)
+SpeedHandleCorner.Parent = SpeedHandle
+
 local SpeedButton = Instance.new("TextButton")
 SpeedButton.Size = UDim2.new(1, 0, 1, 0)
 SpeedButton.Position = UDim2.new(0, 0, 0, 0)
@@ -157,13 +170,29 @@ SpeedButton.BackgroundTransparency = 1
 SpeedButton.Text = ""
 SpeedButton.Parent = SpeedSlider
 
-local dragging = false
+local SpeedToggle = Instance.new("TextButton")
+SpeedToggle.Size = UDim2.new(1, 0, 0, 20)
+SpeedToggle.Position = UDim2.new(0, 0, 0, 50)
+SpeedToggle.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+SpeedToggle.BackgroundTransparency = 0.3
+SpeedToggle.Text = "SPEED: OFF"
+SpeedToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedToggle.TextSize = 12
+SpeedToggle.Font = Enum.Font.Gotham
+SpeedToggle.Parent = SpeedFrame
+
+local SpeedToggleCorner = Instance.new("UICorner")
+SpeedToggleCorner.CornerRadius = UDim.new(0, 8)
+SpeedToggleCorner.Parent = SpeedToggle
+
 local menuOpen = false
 local espEnabled = false
 local jumpEnabled = false
 local speedEnabled = false
+local healthEnabled = false
 local currentSpeed = 16
 local espBoxes = {}
+local speedDragging = false
 
 local colors = {
     Color3.fromRGB(255, 0, 0), Color3.fromRGB(0, 255, 0), Color3.fromRGB(0, 0, 255),
@@ -174,7 +203,9 @@ local colorIndex = 1
 
 local function updateSpeedDisplay()
     SpeedLabel.Text = "SPEED: "..math.floor(currentSpeed)
-    SpeedFill.Size = UDim2.new(currentSpeed/100, 0, 1, 0)
+    local percentage = (currentSpeed - 16) / (100 - 16)
+    SpeedFill.Size = UDim2.new(percentage, 0, 1, 0)
+    SpeedHandle.Position = UDim2.new(percentage, -10, 0, 0)
 end
 
 local function createESP(player)
@@ -192,8 +223,11 @@ local function createESP(player)
     espBoxes[player] = espBox
     
     player.CharacterAdded:Connect(function(character)
-        espBox.Adornee = character
-        espBox.Parent = character
+        if espEnabled then
+            wait(1)
+            espBox.Adornee = character
+            espBox.Parent = character
+        end
     end)
 end
 
@@ -204,7 +238,7 @@ local function removeESP(player)
     end
 end
 
-local function toggleESP()
+ESPButton.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
     ESPButton.Text = "ESP: "..(espEnabled and "ON" or "OFF")
     ESPButton.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
@@ -215,22 +249,12 @@ local function toggleESP()
                 createESP(player)
             end
         end
-        
-        Players.PlayerAdded:Connect(function(player)
-            player.CharacterAdded:Connect(function(character)
-                if espEnabled then
-                    createESP(player)
-                end
-            end)
-        end)
     else
         for player, _ in pairs(espBoxes) do
             removeESP(player)
         end
     end
-end
-
-ESPButton.MouseButton1Click:Connect(toggleESP)
+end)
 
 JumpButton.MouseButton1Click:Connect(function()
     jumpEnabled = not jumpEnabled
@@ -238,29 +262,51 @@ JumpButton.MouseButton1Click:Connect(function()
     JumpButton.BackgroundColor3 = jumpEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
 end)
 
+HealthButton.MouseButton1Click:Connect(function()
+    healthEnabled = not healthEnabled
+    HealthButton.Text = "HEALTH 9999: "..(healthEnabled and "ON" or "OFF")
+    HealthButton.BackgroundColor3 = healthEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
+end)
+
+SpeedToggle.MouseButton1Click:Connect(function()
+    speedEnabled = not speedEnabled
+    SpeedToggle.Text = "SPEED: "..(speedEnabled and "ON" or "OFF")
+    SpeedToggle.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
+end)
+
 DeveloperButton.MouseButton1Click:Connect(function()
     colorIndex = colorIndex % #colors + 1
     DeveloperButton.BackgroundColor3 = colors[colorIndex]
-    if setclipboard then setclipboard("https://t.me/XVSJQ") end
+    
+    if setclipboard then 
+        setclipboard("https://t.me/XVSJQ")
+        StarterGui:SetCore("SendNotification", {
+            Title = "Copied!";
+            Text = "Telegram link copied to clipboard";
+            Duration = 3;
+        })
+    end
 end)
 
-SpeedButton.MouseButton1Down:Connect(function()
-    dragging = true
+SpeedButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        speedDragging = true
+    end
 end)
 
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
+        speedDragging = false
     end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+    if speedDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
         local mousePos = UserInputService:GetMouseLocation()
         local sliderPos = SpeedSlider.AbsolutePosition
         local sliderSize = SpeedSlider.AbsoluteSize
         local relativeX = math.clamp((mousePos.X - sliderPos.X) / sliderSize.X, 0, 1)
-        currentSpeed = math.floor(16 + (relativeX * 34))
+        currentSpeed = math.floor(16 + (relativeX * 84))
         updateSpeedDisplay()
     end
 end)
@@ -272,14 +318,23 @@ UserInputService.JumpRequest:Connect(function()
 end)
 
 RunService.Heartbeat:Connect(function()
-    if Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+    local localPlayer = Players.LocalPlayer
+    
+    if localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
         if speedEnabled then
-            Players.LocalPlayer.Character.Humanoid.WalkSpeed = currentSpeed
+            localPlayer.Character.Humanoid.WalkSpeed = currentSpeed
         else
-            Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+            localPlayer.Character.Humanoid.WalkSpeed = 16
+        end
+        
+        if healthEnabled then
+            localPlayer.Character.Humanoid.MaxHealth = 9999
+            localPlayer.Character.Humanoid.Health = 9999
         end
     end
 end)
+
+local dragConnection
 
 TitleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -290,14 +345,18 @@ TitleBar.InputBegan:Connect(function(input)
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
+                if dragConnection then
+                    dragConnection:Disconnect()
+                end
             end
         end)
         
-        while dragging do
-            local delta = input.Position - dragStart
-            MenuFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-            game:GetService("RunService").RenderStepped:Wait()
-        end
+        dragConnection = UserInputService.InputChanged:Connect(function(moveInput)
+            if dragging and moveInput.UserInputType == Enum.UserInputType.MouseMovement then
+                local delta = moveInput.Position - dragStart
+                MenuFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+        end)
     end
 end)
 
@@ -316,6 +375,21 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if input.KeyCode == Enum.KeyCode.RightControl then
         menuOpen = not menuOpen
         MenuFrame.Visible = menuOpen
+    end
+end)
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        if espEnabled then
+            wait(1)
+            createESP(player)
+        end
+    end)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    if espBoxes[player] then
+        removeESP(player)
     end
 end)
 
