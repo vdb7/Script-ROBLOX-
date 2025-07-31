@@ -2,7 +2,6 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local DeltaGUI = Instance.new("ScreenGui")
 DeltaGUI.Name = "HackFormHyperGUI"
@@ -16,7 +15,7 @@ FloatingButton.Position = UDim2.new(0, 20, 0.5, -30)
 FloatingButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 FloatingButton.BackgroundTransparency = 0.3
 FloatingButton.BorderSizePixel = 0
-FloatingButton.Image = "rbxassetid://75797852451386"
+FloatingButton.Image = "rbxassetid://3926305904"
 FloatingButton.ImageColor3 = Color3.fromRGB(0, 150, 255)
 FloatingButton.Parent = DeltaGUI
 
@@ -38,27 +37,79 @@ local MenuCorner = Instance.new("UICorner")
 MenuCorner.CornerRadius = UDim.new(0, 10)
 MenuCorner.Parent = MenuFrame
 
+local ResizeHandle = Instance.new("Frame")
+ResizeHandle.Name = "ResizeHandle"
+ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
+ResizeHandle.Position = UDim2.new(1, -20, 1, -20)
+ResizeHandle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+ResizeHandle.BorderSizePixel = 0
+ResizeHandle.Parent = MenuFrame
+
+local ResizeCorner = Instance.new("UICorner")
+ResizeCorner.CornerRadius = UDim.new(0, 10)
+ResizeCorner.Parent = ResizeHandle
+
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
+TitleBar.Position = UDim2.new(0, 0, 0, 0)
+TitleBar.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+TitleBar.BackgroundTransparency = 0.2
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MenuFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 10)
+TitleCorner.Parent = TitleBar
+
 local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(1, 0, 0, 40)
-TitleLabel.Position = UDim2.new(0, 0, 0, 0)
-TitleLabel.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-TitleLabel.BackgroundTransparency = 0.2
-TitleLabel.BorderSizePixel = 0
+TitleLabel.Size = UDim2.new(1, -80, 1, 0)
+TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+TitleLabel.BackgroundTransparency = 1
 TitleLabel.Text = "HACK FORM HYPER"
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleLabel.TextSize = 16
 TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Parent = MenuFrame
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = TitleBar
 
-local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0, 10)
-TitleCorner.Parent = TitleLabel
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+MinimizeButton.Position = UDim2.new(1, -70, 0, 5)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+MinimizeButton.BackgroundTransparency = 0.3
+MinimizeButton.Text = "-"
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.TextSize = 18
+MinimizeButton.Parent = TitleBar
+
+local MinimizeCorner = Instance.new("UICorner")
+MinimizeCorner.CornerRadius = UDim.new(0, 15)
+MinimizeCorner.Parent = MinimizeButton
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, 5)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+CloseButton.BackgroundTransparency = 0.3
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 16
+CloseButton.Parent = TitleBar
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 15)
+CloseCorner.Parent = CloseButton
 
 local ScrollingFrame = Instance.new("ScrollingFrame")
 ScrollingFrame.Size = UDim2.new(1, -10, 1, -50)
 ScrollingFrame.Position = UDim2.new(0, 5, 0, 45)
 ScrollingFrame.BackgroundTransparency = 1
-ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 500)
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 550)
 ScrollingFrame.ScrollBarThickness = 6
 ScrollingFrame.Parent = MenuFrame
 
@@ -90,17 +141,20 @@ local HeadshotButton = createButton("HeadshotButton", UDim2.new(0, 10, 0, 145), 
 local SmoothButton = createButton("SmoothButton", UDim2.new(0, 10, 0, 190), "SMOOTH AIM: ON", Color3.fromRGB(0, 150, 0))
 local FlyButton = createButton("FlyButton", UDim2.new(0, 10, 0, 235), "FLY: OFF")
 local SpeedButton = createButton("SpeedButton", UDim2.new(0, 10, 0, 280), "SPEED: OFF")
-local JumpButton = createButton("JumpButton", UDim2.new(0, 10, 0, 325), "INFINITE JUMP: OFF")
-local DeveloperButton = createButton("DeveloperButton", UDim2.new(0, 10, 0, 370), "DEVELOPER", Color3.fromRGB(100, 0, 200))
+local JumpButton = createButton("JumpButton", UDim2.new(0, 10, 0, 415), "INFINITE JUMP: OFF")
+local DeveloperButton = createButton("DeveloperButton", UDim2.new(0, 10, 0, 460), "DEVELOPER", Color3.fromRGB(100, 0, 200))
 
 local dragging = false
+local resizing = false
+local minimized = false
 local dragInput, dragStart, startPos
+local currentSpeed = 50
 
-FloatingButton.InputBegan:Connect(function(input)
+TitleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
-        startPos = FloatingButton.Position
+        startPos = MenuFrame.Position
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -109,28 +163,62 @@ FloatingButton.InputBegan:Connect(function(input)
     end
 end)
 
-FloatingButton.InputChanged:Connect(function(input)
+TitleBar.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement then
         dragInput = input
+    end
+end)
+
+ResizeHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        resizing = true
+        dragStart = input.Position
+        startPos = MenuFrame.Size
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                resizing = false
+            end
+        end)
     end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
     if input == dragInput and dragging then
         local delta = input.Position - dragStart
-        FloatingButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        MenuFrame.Position = UDim2.new(0, FloatingButton.Position.X.Offset + 70, FloatingButton.Position.Y.Scale, FloatingButton.Position.Y.Offset - 180)
+        MenuFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    elseif resizing then
+        local delta = input.Position - dragStart
+        local newWidth = math.max(200, startPos.X.Offset + delta.X)
+        local newHeight = math.max(300, startPos.Y.Offset + delta.Y)
+        MenuFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
+        ScrollingFrame.Size = UDim2.new(1, -10, 1, -50)
     end
+end)
+
+MinimizeButton.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    if minimized then
+        TweenService:Create(MenuFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 280, 0, 40)}):Play()
+        MinimizeButton.Text = "+"
+        ScrollingFrame.Visible = false
+    else
+        TweenService:Create(MenuFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 280, 0, 420)}):Play()
+        MinimizeButton.Text = "-"
+        ScrollingFrame.Visible = true
+    end
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+    MenuFrame.Visible = false
+    menuOpen = false
 end)
 
 local menuOpen = false
 FloatingButton.MouseButton1Click:Connect(function()
-    if not dragging then
-        menuOpen = not menuOpen
-        MenuFrame.Visible = menuOpen
-        if menuOpen then
-            TweenService:Create(MenuFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.1}):Play()
-        end
+    menuOpen = not menuOpen
+    MenuFrame.Visible = menuOpen
+    if menuOpen then
+        TweenService:Create(MenuFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.1}):Play()
     end
 end)
 
@@ -143,27 +231,69 @@ local flyEnabled = false
 local speedEnabled = false
 local jumpEnabled = false
 local espBoxes = {}
-local currentSpeed = 16
 
-local function getClosestPlayerInFOV()
+local AdvancedAimbot = {
+    TeamCheck = true,
+    FOV = 100,
+    Prediction = 0.15,
+    HitChance = 90,
+    AutoShoot = false,
+    SilentAim = false,
+    TargetPart = "Head",
+    Smoothness = 0.15
+}
+
+local AdvancedBulletTrack = {
+    CurveAmount = 2.5,
+    SpeedMultiplier = 1.2,
+    Lifetime = 2,
+    AutoTrack = true,
+    Visualize = true,
+    Color = Color3.fromRGB(255, 0, 0)
+}
+
+local function isPlayerVisible(player, origin)
+    local targetPart = player.Character and player.Character:FindFirstChild(AdvancedAimbot.TargetPart)
+    if not targetPart then return false end
+    
+    local direction = (targetPart.Position - origin).Unit * 1000
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterDescendantsInstances = {workspace.CurrentCamera, player.Character}
+    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+    
+    local raycastResult = workspace:Raycast(origin, direction, raycastParams)
+    if raycastResult then
+        local hitPart = raycastResult.Instance
+        local hitCharacter = hitPart:FindFirstAncestorOfClass("Model")
+        if hitCharacter and hitCharacter == player.Character then
+            return true
+        end
+    end
+    return false
+end
+
+local function getClosestPlayer()
     local closestPlayer = nil
     local closestDistance = math.huge
     local localPlayer = Players.LocalPlayer
     local camera = workspace.CurrentCamera
-    local screenCenter = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
     
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= localPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-            local character = player.Character
-            local targetPart = headshotEnabled and character:FindFirstChild("Head") or character:FindFirstChild("HumanoidRootPart")
-            
-            if targetPart then
-                local screenPoint, onScreen = camera:WorldToViewportPoint(targetPart.Position)
-                if onScreen and screenPoint.Z > 0 then
-                    local distance = (Vector2.new(screenPoint.X, screenPoint.Y) - screenCenter).Magnitude
-                    if distance < 200 and distance < closestDistance then
-                        closestDistance = distance
-                        closestPlayer = player
+            if not AdvancedAimbot.TeamCheck or player.Team ~= localPlayer.Team then
+                if isPlayerVisible(player, camera.CFrame.Position) then
+                    local character = player.Character
+                    local targetPart = character:FindFirstChild(AdvancedAimbot.TargetPart)
+                    
+                    if targetPart then
+                        local distance = (camera.CFrame.Position - targetPart.Position).Magnitude
+                        local screenPoint, onScreen = camera:WorldToViewportPoint(targetPart.Position)
+                        local fovCheck = (Vector2.new(screenPoint.X, screenPoint.Y) - Vector2.new(0.5, 0.5)).Magnitude < (AdvancedAimbot.FOV / 1000)
+                        
+                        if onScreen and fovCheck and distance < closestDistance then
+                            closestDistance = distance
+                            closestPlayer = player
+                        end
                     end
                 end
             end
@@ -171,6 +301,34 @@ local function getClosestPlayerInFOV()
     end
     
     return closestPlayer
+end
+
+local function applyBulletTrack(bullet, targetPart)
+    if not bullet or not targetPart then return end
+    
+    local startPos = bullet.Position
+    local endPos = targetPart.Position + (targetPart.Velocity * AdvancedBulletTrack.Lifetime * AdvancedBulletTrack.Prediction)
+    local direction = (endPos - startPos).Unit
+    
+    local bodyVel = bullet:FindFirstChildOfClass("BodyVelocity") or Instance.new("BodyVelocity")
+    bodyVel.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    bodyVel.Velocity = direction * (bullet.Velocity.Magnitude * AdvancedBulletTrack.SpeedMultiplier)
+    bodyVel.Parent = bullet
+    
+    if AdvancedBulletTrack.Visualize then
+        local beam = Instance.new("Beam")
+        beam.Color = ColorSequence.new(AdvancedBulletTrack.Color)
+        beam.Width0 = 0.5
+        beam.Width1 = 0.5
+        beam.FaceCamera = true
+        beam.Attachment0 = Instance.new("Attachment")
+        beam.Attachment0.Parent = bullet
+        beam.Attachment1 = Instance.new("Attachment")
+        beam.Attachment1.Parent = targetPart
+        beam.Parent = bullet
+    end
+    
+    game:GetService("Debris"):AddItem(bodyVel, AdvancedBulletTrack.Lifetime)
 end
 
 AimbotButton.MouseButton1Click:Connect(function()
@@ -183,19 +341,6 @@ ESPButton.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
     ESPButton.Text = "ESP: "..(espEnabled and "ON" or "OFF")
     ESPButton.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
-    
-    if espEnabled then
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= Players.LocalPlayer and player.Character then
-                createESP(player)
-            end
-        end
-    else
-        for _, box in pairs(espBoxes) do
-            if box then box:Destroy() end
-        end
-        espBoxes = {}
-    end
 end)
 
 BulletTrackButton.MouseButton1Click:Connect(function()
@@ -208,12 +353,14 @@ HeadshotButton.MouseButton1Click:Connect(function()
     headshotEnabled = not headshotEnabled
     HeadshotButton.Text = "HEADSHOT: "..(headshotEnabled and "ON" or "OFF")
     HeadshotButton.BackgroundColor3 = headshotEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
+    AdvancedAimbot.TargetPart = headshotEnabled and "Head" or "HumanoidRootPart"
 end)
 
 SmoothButton.MouseButton1Click:Connect(function()
     smoothAimEnabled = not smoothAimEnabled
     SmoothButton.Text = "SMOOTH AIM: "..(smoothAimEnabled and "ON" or "OFF")
     SmoothButton.BackgroundColor3 = smoothAimEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
+    AdvancedAimbot.Smoothness = smoothAimEnabled and 0.15 or 1
 end)
 
 FlyButton.MouseButton1Click:Connect(function()
@@ -235,77 +382,17 @@ JumpButton.MouseButton1Click:Connect(function()
 end)
 
 local colors = {
-    Color3.fromRGB(255, 0, 0),
-    Color3.fromRGB(0, 255, 0), 
-    Color3.fromRGB(0, 0, 255),
-    Color3.fromRGB(255, 255, 0),
-    Color3.fromRGB(255, 0, 255),
-    Color3.fromRGB(0, 255, 255),
-    Color3.fromRGB(255, 128, 0),
-    Color3.fromRGB(128, 0, 255)
+    Color3.fromRGB(255, 0, 0), Color3.fromRGB(0, 255, 0), Color3.fromRGB(0, 0, 255),
+    Color3.fromRGB(255, 255, 0), Color3.fromRGB(255, 0, 255), Color3.fromRGB(0, 255, 255),
+    Color3.fromRGB(255, 128, 0), Color3.fromRGB(128, 0, 255)
 }
 local colorIndex = 1
 
 DeveloperButton.MouseButton1Click:Connect(function()
     colorIndex = colorIndex % #colors + 1
     DeveloperButton.BackgroundColor3 = colors[colorIndex]
-    
-    if setclipboard then
-        setclipboard("https://t.me/XVSJQ")
-    end
-    
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Developer Contact";
-        Text = "Telegram: @XVSJQ copied to clipboard!";
-        Duration = 3;
-    })
+    if setclipboard then setclipboard("https://t.me/XVSJQ") end
 end)
-
-function createESP(player)
-    if espBoxes[player] then espBoxes[player]:Destroy() end
-    
-    local character = player.Character
-    if not character then return end
-    
-    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    if not humanoidRootPart then return end
-    
-    local box = Instance.new("BoxHandleAdornment")
-    box.Name = "ESP_"..player.Name
-    box.Adornee = humanoidRootPart
-    box.AlwaysOnTop = true
-    box.ZIndex = 5
-    box.Size = Vector3.new(4, 6, 4)
-    box.Color3 = Color3.fromRGB(255, 0, 0)
-    box.Transparency = 0.3
-    box.Parent = workspace
-    
-    local nameTag = Instance.new("BillboardGui")
-    nameTag.Name = "NameTag"
-    nameTag.Parent = humanoidRootPart
-    nameTag.Size = UDim2.new(0, 100, 0, 50)
-    nameTag.AlwaysOnTop = true
-    
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Parent = nameTag
-    nameLabel.Size = UDim2.new(1, 0, 1, 0)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Text = player.Name
-    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    nameLabel.TextSize = 14
-    nameLabel.Font = Enum.Font.GothamBold
-    nameLabel.TextStrokeTransparency = 0
-    nameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    
-    espBoxes[player] = {box = box, nameTag = nameTag}
-    
-    player.CharacterAdded:Connect(function(newChar)
-        if espEnabled then
-            wait(1)
-            createESP(player)
-        end
-    end)
-end
 
 local bodyVelocity = nil
 local bodyPosition = nil
@@ -332,95 +419,41 @@ local function setupFly()
 end
 
 local function removeFly()
-    if bodyVelocity then
-        bodyVelocity:Destroy()
-        bodyVelocity = nil
-    end
-    if bodyPosition then
-        bodyPosition:Destroy()
-        bodyPosition = nil
-    end
+    if bodyVelocity then bodyVelocity:Destroy() bodyVelocity = nil end
+    if bodyPosition then bodyPosition:Destroy() bodyPosition = nil end
 end
 
-local function bulletTrack()
-    if not bulletTrackEnabled then return end
-    
+RunService.RenderStepped:Connect(function()
     local localPlayer = Players.LocalPlayer
-    if not localPlayer.Character then return end
+    local camera = workspace.CurrentCamera
     
-    local closestPlayer = getClosestPlayerInFOV()
-    if closestPlayer and closestPlayer.Character then
-        local targetPart = headshotEnabled and closestPlayer.Character:FindFirstChild("Head") or closestPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if targetPart then
-            local tool = localPlayer.Character:FindFirstChildOfClass("Tool")
-            if tool then
-                local remoteEvents = ReplicatedStorage:GetDescendants()
-                for _, remote in ipairs(remoteEvents) do
-                    if remote:IsA("RemoteEvent") then
-                        local name = remote.Name:lower()
-                        if name:find("shoot") or name:find("fire") or name:find("bullet") or name:find("hit") then
-                            pcall(function()
-                                remote:FireServer(targetPart.Position, targetPart, closestPlayer.Character)
-                            end)
-                        end
-                    end
-                end
-                
-                local workspace_bullets = workspace:GetChildren()
-                for _, obj in ipairs(workspace_bullets) do
-                    if obj.Name:lower():find("bullet") or obj.Name:lower():find("projectile") then
-                        if obj:IsA("BasePart") then
-                            local bodyVel = obj:FindFirstChildOfClass("BodyVelocity")
-                            if not bodyVel then
-                                bodyVel = Instance.new("BodyVelocity")
-                                bodyVel.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                                bodyVel.Parent = obj
-                            end
-                            
-                            local direction = (targetPart.Position - obj.Position).Unit
-                            bodyVel.Velocity = direction * 500
-                        end
-                    end
+    if aimbotEnabled then
+        local closestPlayer = getClosestPlayer()
+        if closestPlayer and closestPlayer.Character then
+            local targetPart = closestPlayer.Character:FindFirstChild(AdvancedAimbot.TargetPart)
+            if targetPart then
+                if smoothAimEnabled then
+                    local currentCFrame = camera.CFrame
+                    local targetCFrame = CFrame.new(camera.CFrame.Position, targetPart.Position + (targetPart.Velocity * AdvancedAimbot.Prediction))
+                    camera.CFrame = currentCFrame:Lerp(targetCFrame, AdvancedAimbot.Smoothness)
+                else
+                    camera.CFrame = CFrame.new(camera.CFrame.Position, targetPart.Position + (targetPart.Velocity * AdvancedAimbot.Prediction))
                 end
             end
         end
     end
-end
-
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function(char)
-        if espEnabled then
-            wait(1)
-            createESP(player)
-        end
-    end)
-end)
-
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
     
-    if input.KeyCode == Enum.KeyCode.RightControl then
-        menuOpen = not menuOpen
-        MenuFrame.Visible = menuOpen
-    end
-end)
-
-RunService.RenderStepped:Connect(function()
-    local localPlayer = Players.LocalPlayer
-    
-    if aimbotEnabled then
-        local closestPlayer = getClosestPlayerInFOV()
-        local camera = workspace.CurrentCamera
-        
+    if bulletTrackEnabled then
+        local closestPlayer = getClosestPlayer()
         if closestPlayer and closestPlayer.Character then
-            local targetPart = headshotEnabled and closestPlayer.Character:FindFirstChild("Head") or closestPlayer.Character:FindFirstChild("HumanoidRootPart")
+            local targetPart = closestPlayer.Character:FindFirstChild(AdvancedAimbot.TargetPart)
             if targetPart then
-                if smoothAimEnabled then
-                    local currentCFrame = camera.CFrame
-                    local targetCFrame = CFrame.new(camera.CFrame.Position, targetPart.Position)
-                    camera.CFrame = currentCFrame:Lerp(targetCFrame, 0.2)
-                else
-                    camera.CFrame = CFrame.new(camera.CFrame.Position, targetPart.Position)
+                for _, obj in ipairs(workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") and (obj.Name:lower():find("bullet") or obj.Name:lower():find("projectile")) then
+                        if localPlayer.Character and (obj.Position - localPlayer.Character:GetPivot().Position).Magnitude < 50 then
+                            applyBulletTrack(obj, targetPart)
+                        end
+                    end
                 end
             end
         end
@@ -428,20 +461,13 @@ RunService.RenderStepped:Connect(function()
     
     if jumpEnabled and localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
         local humanoid = localPlayer.Character.Humanoid
-        if humanoid.Jump and humanoid:GetState() ~= Enum.HumanoidStateType.Freefall then
+        if humanoid.Jump then
             local hrp = localPlayer.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
-                local bodyVel = hrp:FindFirstChild("InfiniteJumpVel")
-                
-                if not bodyVel then
-                    bodyVel = Instance.new("BodyVelocity")
-                    bodyVel.Name = "InfiniteJumpVel"
-                    bodyVel.MaxForce = Vector3.new(0, math.huge, 0)
-                    bodyVel.Parent = hrp
-                end
-                
+                local bodyVel = Instance.new("BodyVelocity")
+                bodyVel.MaxForce = Vector3.new(0, math.huge, 0)
                 bodyVel.Velocity = Vector3.new(0, 50, 0)
-                
+                bodyVel.Parent = hrp
                 game:GetService("Debris"):AddItem(bodyVel, 0.3)
             end
         end
@@ -451,7 +477,6 @@ RunService.RenderStepped:Connect(function()
         setupFly()
         if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local hrp = localPlayer.Character.HumanoidRootPart
-            local camera = workspace.CurrentCamera
             local moveVector = localPlayer:GetMoveVector()
             
             if bodyPosition then
@@ -463,24 +488,20 @@ RunService.RenderStepped:Connect(function()
     end
     
     if speedEnabled and localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
-        localPlayer.Character.Humanoid.WalkSpeed = 50
+        localPlayer.Character.Humanoid.WalkSpeed = currentSpeed
     elseif localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
         localPlayer.Character.Humanoid.WalkSpeed = 16
     end
-    
-    bulletTrack()
 end)
 
-for _, player in ipairs(Players:GetPlayers()) do
-    if player ~= Players.LocalPlayer then
-        player.CharacterAdded:Connect(function(char)
-            if espEnabled then
-                wait(1)
-                createESP(player)
-            end
-        end)
-        if player.Character and espEnabled then
-            createESP(player)
-        end
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        menuOpen = not menuOpen
+        MenuFrame.Visible = menuOpen
     end
-end
+end)
+
+DeltaGUI.Destroying:Connect(function()
+    removeFly()
+end)
