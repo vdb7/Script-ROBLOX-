@@ -1,93 +1,145 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local MiniGUI = Instance.new("ScreenGui")
-MiniGUI.Name = "MiniDeltaGUI"
-MiniGUI.Parent = game.CoreGui
-MiniGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+local DeltaGUI = Instance.new("ScreenGui")
+DeltaGUI.Name = "DeltaGUI"
+DeltaGUI.Parent = game.CoreGui
+DeltaGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 50, 0, 50)
-MainFrame.Position = UDim2.new(0, 10, 0, 200)
-MainFrame.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-MainFrame.BackgroundTransparency = 0.3
-MainFrame.BorderSizePixel = 0
-MainFrame.Parent = MiniGUI
+local FloatingButton = Instance.new("ImageButton")
+FloatingButton.Name = "FloatingButton"
+FloatingButton.Size = UDim2.new(0, 60, 0, 60)
+FloatingButton.Position = UDim2.new(0, 20, 0.5, -30)
+FloatingButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+FloatingButton.BackgroundTransparency = 0.3
+FloatingButton.BorderSizePixel = 0
+FloatingButton.Image = "rbxassetid://3926305904"
+FloatingButton.ImageColor3 = Color3.fromRGB(0, 150, 255)
+FloatingButton.Parent = DeltaGUI
 
-local Logo = Instance.new("ImageLabel")
-Logo.Name = "Logo"
-Logo.Size = UDim2.new(1, 0, 1, 0)
-Logo.BackgroundTransparency = 1
-Logo.Image = "rbxassetid://75797852451386"
-Logo.Parent = MainFrame
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 30)
+Corner.Parent = FloatingButton
 
-local ExpandedFrame = Instance.new("Frame")
-ExpandedFrame.Name = "ExpandedFrame"
-ExpandedFrame.Size = UDim2.new(0, 200, 0, 150)
-ExpandedFrame.Position = UDim2.new(1, 5, 0, 0)
-ExpandedFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-ExpandedFrame.BackgroundTransparency = 0.2
-ExpandedFrame.BorderSizePixel = 0
-ExpandedFrame.Visible = false
-ExpandedFrame.Parent = MainFrame
+local MenuFrame = Instance.new("Frame")
+MenuFrame.Name = "MenuFrame"
+MenuFrame.Size = UDim2.new(0, 250, 0, 300)
+MenuFrame.Position = UDim2.new(0, 90, 0.5, -150)
+MenuFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MenuFrame.BackgroundTransparency = 0.1
+MenuFrame.BorderSizePixel = 0
+MenuFrame.Visible = false
+MenuFrame.Parent = DeltaGUI
 
-local AimbotBtn = Instance.new("TextButton")
-AimbotBtn.Name = "AimbotBtn"
-AimbotBtn.Size = UDim2.new(1, 0, 0, 40)
-AimbotBtn.Position = UDim2.new(0, 0, 0, 0)
-AimbotBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-AimbotBtn.BackgroundTransparency = 0.5
-AimbotBtn.Text = "AIMBOT: OFF"
-AimbotBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-AimbotBtn.Font = Enum.Font.Gotham
-AimbotBtn.TextSize = 14
-AimbotBtn.Parent = ExpandedFrame
+local MenuCorner = Instance.new("UICorner")
+MenuCorner.CornerRadius = UDim.new(0, 10)
+MenuCorner.Parent = MenuFrame
 
-local ESPBtn = Instance.new("TextButton")
-ESPBtn.Name = "ESPBtn"
-ESPBtn.Size = UDim2.new(1, 0, 0, 40)
-ESPBtn.Position = UDim2.new(0, 0, 0, 50)
-ESPBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-ESPBtn.BackgroundTransparency = 0.5
-ESPBtn.Text = "ESP: OFF"
-ESPBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ESPBtn.Font = Enum.Font.Gotham
-ESPBtn.TextSize = 14
-ESPBtn.Parent = ExpandedFrame
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1, 0, 0, 40)
+TitleLabel.Position = UDim2.new(0, 0, 0, 0)
+TitleLabel.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+TitleLabel.BackgroundTransparency = 0.2
+TitleLabel.BorderSizePixel = 0
+TitleLabel.Text = "DELTA HUB"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextSize = 18
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Parent = MenuFrame
 
-local MagicBulletBtn = Instance.new("TextButton")
-MagicBulletBtn.Name = "MagicBulletBtn"
-MagicBulletBtn.Size = UDim2.new(1, 0, 0, 40)
-MagicBulletBtn.Position = UDim2.new(0, 0, 0, 100)
-MagicBulletBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-MagicBulletBtn.BackgroundTransparency = 0.5
-MagicBulletBtn.Text = "MAGIC BULLET: OFF"
-MagicBulletBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-MagicBulletBtn.Font = Enum.Font.Gotham
-MagicBulletBtn.TextSize = 14
-MagicBulletBtn.Parent = ExpandedFrame
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 10)
+TitleCorner.Parent = TitleLabel
 
-local espEnabled = false
-local aimbotEnabled = false
-local magicBulletEnabled = false
-local espBoxes = {}
+local function createButton(name, position, text)
+    local button = Instance.new("TextButton")
+    button.Name = name
+    button.Size = UDim2.new(1, -20, 0, 35)
+    button.Position = position
+    button.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    button.BackgroundTransparency = 0.3
+    button.BorderSizePixel = 0
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextSize = 14
+    button.Font = Enum.Font.Gotham
+    button.Parent = MenuFrame
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 8)
+    buttonCorner.Parent = button
+    
+    return button
+end
 
-MainFrame.InputBegan:Connect(function(input)
+local AimbotButton = createButton("AimbotButton", UDim2.new(0, 10, 0, 50), "AIMBOT: OFF")
+local ESPButton = createButton("ESPButton", UDim2.new(0, 10, 0, 95), "ESP: OFF")
+local BulletTrackButton = createButton("BulletTrackButton", UDim2.new(0, 10, 0, 140), "BULLET TRACK: OFF")
+local HeadshotButton = createButton("HeadshotButton", UDim2.new(0, 10, 0, 185), "HEADSHOT: ON")
+local SmoothButton = createButton("SmoothButton", UDim2.new(0, 10, 0, 230), "SMOOTH AIM: ON")
+
+local dragging = false
+local dragInput, dragStart, startPos
+
+FloatingButton.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        ExpandedFrame.Visible = not ExpandedFrame.Visible
+        dragging = true
+        dragStart = input.Position
+        startPos = FloatingButton.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
     end
 end)
 
-AimbotBtn.MouseButton1Click:Connect(function()
-    aimbotEnabled = not aimbotEnabled
-    AimbotBtn.Text = "AIMBOT: "..(aimbotEnabled and "ON" or "OFF")
+FloatingButton.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
 end)
 
-ESPBtn.MouseButton1Click:Connect(function()
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        FloatingButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        MenuFrame.Position = UDim2.new(0, FloatingButton.Position.X.Offset + 70, FloatingButton.Position.Y.Scale, FloatingButton.Position.Y.Offset - 120)
+    end
+end)
+
+local menuOpen = false
+FloatingButton.MouseButton1Click:Connect(function()
+    if not dragging then
+        menuOpen = not menuOpen
+        MenuFrame.Visible = menuOpen
+        if menuOpen then
+            TweenService:Create(MenuFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.1}):Play()
+        end
+    end
+end)
+
+local aimbotEnabled = false
+local espEnabled = false
+local bulletTrackEnabled = false
+local headshotEnabled = true
+local smoothAimEnabled = true
+local espBoxes = {}
+
+AimbotButton.MouseButton1Click:Connect(function()
+    aimbotEnabled = not aimbotEnabled
+    AimbotButton.Text = "AIMBOT: "..(aimbotEnabled and "ON" or "OFF")
+    AimbotButton.BackgroundColor3 = aimbotEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
+end)
+
+ESPButton.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
-    ESPBtn.Text = "ESP: "..(espEnabled and "ON" or "OFF")
+    ESPButton.Text = "ESP: "..(espEnabled and "ON" or "OFF")
+    ESPButton.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
+    
     if espEnabled then
         for _, player in ipairs(Players:GetPlayers()) do
             if player ~= Players.LocalPlayer and player.Character then
@@ -102,9 +154,22 @@ ESPBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-MagicBulletBtn.MouseButton1Click:Connect(function()
-    magicBulletEnabled = not magicBulletEnabled
-    MagicBulletBtn.Text = "MAGIC BULLET: "..(magicBulletEnabled and "ON" or "OFF")
+BulletTrackButton.MouseButton1Click:Connect(function()
+    bulletTrackEnabled = not bulletTrackEnabled
+    BulletTrackButton.Text = "BULLET TRACK: "..(bulletTrackEnabled and "ON" or "OFF")
+    BulletTrackButton.BackgroundColor3 = bulletTrackEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
+end)
+
+HeadshotButton.MouseButton1Click:Connect(function()
+    headshotEnabled = not headshotEnabled
+    HeadshotButton.Text = "HEADSHOT: "..(headshotEnabled and "ON" or "OFF")
+    HeadshotButton.BackgroundColor3 = headshotEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
+end)
+
+SmoothButton.MouseButton1Click:Connect(function()
+    smoothAimEnabled = not smoothAimEnabled
+    SmoothButton.Text = "SMOOTH AIM: "..(smoothAimEnabled and "ON" or "OFF")
+    SmoothButton.BackgroundColor3 = smoothAimEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
 end)
 
 function createESP(player)
@@ -136,6 +201,53 @@ function createESP(player)
     end)
 end
 
+local function bulletTrack()
+    if not bulletTrackEnabled then return end
+    
+    local localPlayer = Players.LocalPlayer
+    if not localPlayer.Character then return end
+    
+    local tool = localPlayer.Character:FindFirstChildOfClass("Tool")
+    if not tool then return end
+    
+    local closestPlayer = nil
+    local closestDistance = math.huge
+    
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= localPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+            local targetPart = player.Character:FindFirstChild("HumanoidRootPart")
+            if targetPart then
+                local distance = (localPlayer.Character.HumanoidRootPart.Position - targetPart.Position).Magnitude
+                if distance < closestDistance and distance < 500 then
+                    closestDistance = distance
+                    closestPlayer = player
+                end
+            end
+        end
+    end
+    
+    if closestPlayer and closestPlayer.Character then
+        local targetPart = closestPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if targetPart then
+            local remoteEvents = ReplicatedStorage:GetDescendants()
+            for _, remote in ipairs(remoteEvents) do
+                if remote:IsA("RemoteEvent") and (remote.Name:lower():find("shoot") or remote.Name:lower():find("fire") or remote.Name:lower():find("bullet")) then
+                    remote:FireServer(targetPart.Position, targetPart)
+                end
+            end
+        end
+    end
+end
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(char)
+        if espEnabled then
+            wait(1)
+            createESP(player)
+        end
+    end)
+end)
+
 RunService.RenderStepped:Connect(function()
     if aimbotEnabled then
         local closestPlayer = nil
@@ -145,7 +257,7 @@ RunService.RenderStepped:Connect(function()
         
         for _, player in ipairs(Players:GetPlayers()) do
             if player ~= localPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-                local targetPart = player.Character:FindFirstChild("Head") or player.Character:FindFirstChild("HumanoidRootPart")
+                local targetPart = headshotEnabled and player.Character:FindFirstChild("Head") or player.Character:FindFirstChild("HumanoidRootPart")
                 if targetPart then
                     local screenPoint = camera:WorldToViewportPoint(targetPart.Position)
                     if screenPoint.Z > 0 then
@@ -160,47 +272,20 @@ RunService.RenderStepped:Connect(function()
         end
         
         if closestPlayer and closestPlayer.Character then
-            local targetPart = closestPlayer.Character:FindFirstChild("Head") or closestPlayer.Character:FindFirstChild("HumanoidRootPart")
+            local targetPart = headshotEnabled and closestPlayer.Character:FindFirstChild("Head") or closestPlayer.Character:FindFirstChild("HumanoidRootPart")
             if targetPart then
-                camera.CFrame = CFrame.new(camera.CFrame.Position, targetPart.Position)
-            end
-        end
-    end
-    
-    if magicBulletEnabled then
-        local localPlayer = Players.LocalPlayer
-        if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            for _, player in ipairs(Players:GetPlayers()) do
-                if player ~= localPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-                    local targetPart = player.Character:FindFirstChild("Head") or player.Character:FindFirstChild("HumanoidRootPart")
-                    if targetPart then
-                        local bullets = workspace:FindPartsInRegion3(
-                            Region3.new(
-                                localPlayer.Character.HumanoidRootPart.Position - Vector3.new(0.5, 0.5, 0.5),
-                                localPlayer.Character.HumanoidRootPart.Position + Vector3.new(0.5, 0.5, 0.5)
-                            ),
-                            nil,
-                            100
-                        )
-                        for _, bullet in ipairs(bullets) do
-                            if bullet:IsA("BasePart") and bullet.Velocity.Magnitude > 50 then
-                                bullet.Velocity = (targetPart.Position - bullet.Position).Unit * bullet.Velocity.Magnitude
-                            end
-                        end
-                    end
+                if smoothAimEnabled then
+                    local currentCFrame = camera.CFrame
+                    local targetCFrame = CFrame.new(camera.CFrame.Position, targetPart.Position)
+                    camera.CFrame = currentCFrame:Lerp(targetCFrame, 0.3)
+                else
+                    camera.CFrame = CFrame.new(camera.CFrame.Position, targetPart.Position)
                 end
             end
         end
     end
-end)
-
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function(char)
-        if espEnabled then
-            wait(1)
-            createESP(player)
-        end
-    end)
+    
+    bulletTrack()
 end)
 
 for _, player in ipairs(Players:GetPlayers()) do
@@ -216,3 +301,10 @@ for _, player in ipairs(Players:GetPlayers()) do
         end
     end
 end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if input.KeyCode == Enum.KeyCode.RightControl and not gameProcessed then
+        menuOpen = not menuOpen
+        MenuFrame.Visible = menuOpen
+    end
+end)
