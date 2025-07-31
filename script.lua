@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local DeltaGUI = Instance.new("ScreenGui")
 DeltaGUI.Name = "HackFormHyperGUI"
@@ -113,6 +114,55 @@ ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 550)
 ScrollingFrame.ScrollBarThickness = 6
 ScrollingFrame.Parent = MenuFrame
 
+local SpeedSliderFrame = Instance.new("Frame")
+SpeedSliderFrame.Name = "SpeedSliderFrame"
+SpeedSliderFrame.Size = UDim2.new(1, -20, 0, 60)
+SpeedSliderFrame.Position = UDim2.new(0, 10, 0, 325)
+SpeedSliderFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+SpeedSliderFrame.BackgroundTransparency = 0.3
+SpeedSliderFrame.BorderSizePixel = 0
+SpeedSliderFrame.Visible = false
+SpeedSliderFrame.Parent = ScrollingFrame
+
+local SliderCorner = Instance.new("UICorner")
+SliderCorner.CornerRadius = UDim.new(0, 8)
+SliderCorner.Parent = SpeedSliderFrame
+
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.Size = UDim2.new(1, 0, 0, 20)
+SpeedLabel.Position = UDim2.new(0, 0, 0, 5)
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.Text = "Speed: 50"
+SpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedLabel.TextSize = 12
+SpeedLabel.Font = Enum.Font.Gotham
+SpeedLabel.Parent = SpeedSliderFrame
+
+local SpeedSlider = Instance.new("Frame")
+SpeedSlider.Name = "SpeedSlider"
+SpeedSlider.Size = UDim2.new(1, -20, 0, 20)
+SpeedSlider.Position = UDim2.new(0, 10, 0, 30)
+SpeedSlider.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+SpeedSlider.BorderSizePixel = 0
+SpeedSlider.Parent = SpeedSliderFrame
+
+local SliderBarCorner = Instance.new("UICorner")
+SliderBarCorner.CornerRadius = UDim.new(0, 10)
+SliderBarCorner.Parent = SpeedSlider
+
+local SpeedHandle = Instance.new("TextButton")
+SpeedHandle.Name = "SpeedHandle"
+SpeedHandle.Size = UDim2.new(0, 20, 1, 0)
+SpeedHandle.Position = UDim2.new(0, 0, 0, 0)
+SpeedHandle.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+SpeedHandle.BorderSizePixel = 0
+SpeedHandle.Text = ""
+SpeedHandle.Parent = SpeedSlider
+
+local HandleCorner = Instance.new("UICorner")
+HandleCorner.CornerRadius = UDim.new(0, 10)
+HandleCorner.Parent = SpeedHandle
+
 local function createButton(name, position, text, color)
     local button = Instance.new("TextButton")
     button.Name = name
@@ -195,6 +245,31 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
+local speedDragging = false
+SpeedHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        speedDragging = true
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                speedDragging = false
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if speedDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local sliderPos = SpeedSlider.AbsolutePosition.X
+        local sliderSize = SpeedSlider.AbsoluteSize.X
+        local mouseX = input.Position.X
+        local relativeX = math.max(0, math.min(sliderSize - 20, mouseX - sliderPos))
+        
+        SpeedHandle.Position = UDim2.new(0, relativeX, 0, 0)
+        currentSpeed = math.floor(50 + (relativeX / (sliderSize - 20)) * 450)
+        SpeedLabel.Text = "Speed: " .. currentSpeed
+    end
+end)
+
 MinimizeButton.MouseButton1Click:Connect(function()
     minimized = not minimized
     if minimized then
@@ -232,33 +307,15 @@ local speedEnabled = false
 local jumpEnabled = false
 local espBoxes = {}
 
-local AdvancedAimbot = {
-    TeamCheck = true,
-    FOV = 100,
-    Prediction = 0.15,
-    HitChance = 90,
-    AutoShoot = false,
-    SilentAim = false,
-    TargetPart = "Head",
-    Smoothness = 0.15
-}
-
-local AdvancedBulletTrack = {
-    CurveAmount = 2.5,
-    SpeedMultiplier = 1.2,
-    Lifetime = 2,
-    AutoTrack = true,
-    Visualize = true,
-    Color = Color3.fromRGB(255, 0, 0)
-}
-
-local function isPlayerVisible(player, origin)
-    local targetPart = player.Character and player.Character:FindFirstChild(AdvancedAimbot.TargetPart)
+local function isPlayerVisible(player, camera)
+    if not player.Character then return false end
+    local targetPart = headshotEnabled and player.Character:FindFirstChild("Head") or player.Character:FindFirstChild("HumanoidRootPart")
     if not targetPart then return false end
     
+    local origin = camera.CFrame.Position
     local direction = (targetPart.Position - origin).Unit * 1000
     local raycastParams = RaycastParams.new()
-    raycastParams.FilterDescendantsInstances = {workspace.CurrentCamera, player.Character}
+    raycastParams.FilterDescendantsInstances = {camera, player.Character}
     raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
     
     local raycastResult = workspace:Raycast(origin, direction, raycastParams)
@@ -280,20 +337,15 @@ local function getClosestPlayer()
     
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= localPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-            if not AdvancedAimbot.TeamCheck or player.Team ~= localPlayer.Team then
-                if isPlayerVisible(player, camera.CFrame.Position) then
-                    local character = player.Character
-                    local targetPart = character:FindFirstChild(AdvancedAimbot.TargetPart)
-                    
-                    if targetPart then
-                        local distance = (camera.CFrame.Position - targetPart.Position).Magnitude
-                        local screenPoint, onScreen = camera:WorldToViewportPoint(targetPart.Position)
-                        local fovCheck = (Vector2.new(screenPoint.X, screenPoint.Y) - Vector2.new(0.5, 0.5)).Magnitude < (AdvancedAimbot.FOV / 1000)
-                        
-                        if onScreen and fovCheck and distance < closestDistance then
-                            closestDistance = distance
-                            closestPlayer = player
-                        end
+            if isPlayerVisible(player, camera) then
+                local character = player.Character
+                local targetPart = headshotEnabled and character:FindFirstChild("Head") or character:FindFirstChild("HumanoidRootPart")
+                
+                if targetPart and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local distance = (localPlayer.Character.HumanoidRootPart.Position - targetPart.Position).Magnitude
+                    if distance < 1000 and distance < closestDistance then
+                        closestDistance = distance
+                        closestPlayer = player
                     end
                 end
             end
@@ -301,34 +353,6 @@ local function getClosestPlayer()
     end
     
     return closestPlayer
-end
-
-local function applyBulletTrack(bullet, targetPart)
-    if not bullet or not targetPart then return end
-    
-    local startPos = bullet.Position
-    local endPos = targetPart.Position + (targetPart.Velocity * AdvancedBulletTrack.Lifetime * AdvancedBulletTrack.Prediction)
-    local direction = (endPos - startPos).Unit
-    
-    local bodyVel = bullet:FindFirstChildOfClass("BodyVelocity") or Instance.new("BodyVelocity")
-    bodyVel.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    bodyVel.Velocity = direction * (bullet.Velocity.Magnitude * AdvancedBulletTrack.SpeedMultiplier)
-    bodyVel.Parent = bullet
-    
-    if AdvancedBulletTrack.Visualize then
-        local beam = Instance.new("Beam")
-        beam.Color = ColorSequence.new(AdvancedBulletTrack.Color)
-        beam.Width0 = 0.5
-        beam.Width1 = 0.5
-        beam.FaceCamera = true
-        beam.Attachment0 = Instance.new("Attachment")
-        beam.Attachment0.Parent = bullet
-        beam.Attachment1 = Instance.new("Attachment")
-        beam.Attachment1.Parent = targetPart
-        beam.Parent = bullet
-    end
-    
-    game:GetService("Debris"):AddItem(bodyVel, AdvancedBulletTrack.Lifetime)
 end
 
 AimbotButton.MouseButton1Click:Connect(function()
@@ -341,6 +365,20 @@ ESPButton.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
     ESPButton.Text = "ESP: "..(espEnabled and "ON" or "OFF")
     ESPButton.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
+    
+    if espEnabled then
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= Players.LocalPlayer and player.Character then
+                createESP(player)
+            end
+        end
+    else
+        for _, espData in pairs(espBoxes) do
+            if espData and espData.box then espData.box:Destroy() end
+            if espData and espData.nameTag then espData.nameTag:Destroy() end
+        end
+        espBoxes = {}
+    end
 end)
 
 BulletTrackButton.MouseButton1Click:Connect(function()
@@ -353,14 +391,12 @@ HeadshotButton.MouseButton1Click:Connect(function()
     headshotEnabled = not headshotEnabled
     HeadshotButton.Text = "HEADSHOT: "..(headshotEnabled and "ON" or "OFF")
     HeadshotButton.BackgroundColor3 = headshotEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
-    AdvancedAimbot.TargetPart = headshotEnabled and "Head" or "HumanoidRootPart"
 end)
 
 SmoothButton.MouseButton1Click:Connect(function()
     smoothAimEnabled = not smoothAimEnabled
     SmoothButton.Text = "SMOOTH AIM: "..(smoothAimEnabled and "ON" or "OFF")
     SmoothButton.BackgroundColor3 = smoothAimEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
-    AdvancedAimbot.Smoothness = smoothAimEnabled and 0.15 or 1
 end)
 
 FlyButton.MouseButton1Click:Connect(function()
@@ -373,6 +409,13 @@ SpeedButton.MouseButton1Click:Connect(function()
     speedEnabled = not speedEnabled
     SpeedButton.Text = "SPEED: "..(speedEnabled and "ON" or "OFF")
     SpeedButton.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
+    SpeedSliderFrame.Visible = speedEnabled
+    
+    if speedEnabled then
+        ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 600)
+    else
+        ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 550)
+    end
 end)
 
 JumpButton.MouseButton1Click:Connect(function()
@@ -391,8 +434,59 @@ local colorIndex = 1
 DeveloperButton.MouseButton1Click:Connect(function()
     colorIndex = colorIndex % #colors + 1
     DeveloperButton.BackgroundColor3 = colors[colorIndex]
-    if setclipboard then setclipboard("https://t.me/XVSJQ") end
+    
+    if setclipboard then
+        setclipboard("https://t.me/XVSJQ")
+    end
+    
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Developer Contact";
+        Text = "Telegram: @XVSJQ copied to clipboard!";
+        Duration = 3;
+    })
 end)
+
+function createESP(player)
+    if espBoxes[player] then 
+        if espBoxes[player].box then espBoxes[player].box:Destroy() end
+        if espBoxes[player].nameTag then espBoxes[player].nameTag:Destroy() end
+    end
+    
+    local character = player.Character
+    if not character then return end
+    
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return end
+    
+    local box = Instance.new("BoxHandleAdornment")
+    box.Name = "ESP_"..player.Name
+    box.Adornee = humanoidRootPart
+    box.AlwaysOnTop = true
+    box.ZIndex = 5
+    box.Size = Vector3.new(4, 6, 4)
+    box.Color3 = Color3.fromRGB(255, 0, 0)
+    box.Transparency = 0.3
+    box.Parent = workspace
+    
+    local nameTag = Instance.new("BillboardGui")
+    nameTag.Name = "NameTag"
+    nameTag.Parent = humanoidRootPart
+    nameTag.Size = UDim2.new(0, 100, 0, 50)
+    nameTag.AlwaysOnTop = true
+    
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Parent = nameTag
+    nameLabel.Size = UDim2.new(1, 0, 1, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = player.Name
+    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLabel.TextSize = 14
+    nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.TextStrokeTransparency = 0
+    nameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    
+    espBoxes[player] = {box = box, nameTag = nameTag}
+end
 
 local bodyVelocity = nil
 local bodyPosition = nil
@@ -423,37 +517,95 @@ local function removeFly()
     if bodyPosition then bodyPosition:Destroy() bodyPosition = nil end
 end
 
-RunService.RenderStepped:Connect(function()
-    local localPlayer = Players.LocalPlayer
-    local camera = workspace.CurrentCamera
+local function bulletTrack()
+    if not bulletTrackEnabled then return end
     
-    if aimbotEnabled then
-        local closestPlayer = getClosestPlayer()
-        if closestPlayer and closestPlayer.Character then
-            local targetPart = closestPlayer.Character:FindFirstChild(AdvancedAimbot.TargetPart)
-            if targetPart then
-                if smoothAimEnabled then
-                    local currentCFrame = camera.CFrame
-                    local targetCFrame = CFrame.new(camera.CFrame.Position, targetPart.Position + (targetPart.Velocity * AdvancedAimbot.Prediction))
-                    camera.CFrame = currentCFrame:Lerp(targetCFrame, AdvancedAimbot.Smoothness)
-                else
-                    camera.CFrame = CFrame.new(camera.CFrame.Position, targetPart.Position + (targetPart.Velocity * AdvancedAimbot.Prediction))
-                end
+    local localPlayer = Players.LocalPlayer
+    if not localPlayer.Character then return end
+    
+    local closestPlayer = getClosestPlayer()
+    if closestPlayer and closestPlayer.Character then
+        local targetPart = headshotEnabled and closestPlayer.Character:FindFirstChild("Head") or closestPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if targetPart then
+            local tool = localPlayer.Character:FindFirstChildOfClass("Tool")
+            if tool and tool:FindFirstChild("Handle") then
+                spawn(function()
+                    wait(0.1)
+                    for _, obj in ipairs(workspace:GetDescendants()) do
+                        if obj:IsA("BasePart") and (obj.Name:lower():find("bullet") or obj.Name:lower():find("projectile")) then
+                            if (obj.Position - tool.Handle.Position).Magnitude < 50 then
+                                local bodyVel = obj:FindFirstChildOfClass("BodyVelocity") or Instance.new("BodyVelocity")
+                                bodyVel.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                                bodyVel.Parent = obj
+                                
+                                local direction = (targetPart.Position - obj.Position).Unit
+                                bodyVel.Velocity = direction * 1000
+                                
+                                spawn(function()
+                                    wait(2)
+                                    if bodyVel and bodyVel.Parent then
+                                        bodyVel:Destroy()
+                                    end
+                                end)
+                            end
+                        end
+                    end
+                end)
             end
         end
     end
+end
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(char)
+        if espEnabled then
+            wait(1)
+            createESP(player)
+        end
+    end)
     
-    if bulletTrackEnabled then
+    player.CharacterRemoving:Connect(function()
+        if espBoxes[player] then
+            if espBoxes[player].box then espBoxes[player].box:Destroy() end
+            if espBoxes[player].nameTag then espBoxes[player].nameTag:Destroy() end
+            espBoxes[player] = nil
+        end
+    end)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    if espBoxes[player] then
+        if espBoxes[player].box then espBoxes[player].box:Destroy() end
+        if espBoxes[player].nameTag then espBoxes[player].nameTag:Destroy() end
+        espBoxes[player] = nil
+    end
+end)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        menuOpen = not menuOpen
+        MenuFrame.Visible = menuOpen
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    local localPlayer = Players.LocalPlayer
+    
+    if aimbotEnabled then
         local closestPlayer = getClosestPlayer()
+        local camera = workspace.CurrentCamera
+        
         if closestPlayer and closestPlayer.Character then
-            local targetPart = closestPlayer.Character:FindFirstChild(AdvancedAimbot.TargetPart)
+            local targetPart = headshotEnabled and closestPlayer.Character:FindFirstChild("Head") or closestPlayer.Character:FindFirstChild("HumanoidRootPart")
             if targetPart then
-                for _, obj in ipairs(workspace:GetDescendants()) do
-                    if obj:IsA("BasePart") and (obj.Name:lower():find("bullet") or obj.Name:lower():find("projectile")) then
-                        if localPlayer.Character and (obj.Position - localPlayer.Character:GetPivot().Position).Magnitude < 50 then
-                            applyBulletTrack(obj, targetPart)
-                        end
-                    end
+                if smoothAimEnabled then
+                    local currentCFrame = camera.CFrame
+                    local targetCFrame = CFrame.new(camera.CFrame.Position, targetPart.Position)
+                    camera.CFrame = currentCFrame:Lerp(targetCFrame, 0.15)
+                else
+                    camera.CFrame = CFrame.new(camera.CFrame.Position, targetPart.Position)
                 end
             end
         end
@@ -468,6 +620,7 @@ RunService.RenderStepped:Connect(function()
                 bodyVel.MaxForce = Vector3.new(0, math.huge, 0)
                 bodyVel.Velocity = Vector3.new(0, 50, 0)
                 bodyVel.Parent = hrp
+                
                 game:GetService("Debris"):AddItem(bodyVel, 0.3)
             end
         end
@@ -477,6 +630,7 @@ RunService.RenderStepped:Connect(function()
         setupFly()
         if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local hrp = localPlayer.Character.HumanoidRootPart
+            local camera = workspace.CurrentCamera
             local moveVector = localPlayer:GetMoveVector()
             
             if bodyPosition then
@@ -492,16 +646,43 @@ RunService.RenderStepped:Connect(function()
     elseif localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
         localPlayer.Character.Humanoid.WalkSpeed = 16
     end
+    
+    bulletTrack()
 end)
 
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.RightControl then
-        menuOpen = not menuOpen
-        MenuFrame.Visible = menuOpen
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= Players.LocalPlayer then
+        player.CharacterAdded:Connect(function(char)
+            if espEnabled then
+                wait(1)
+                createESP(player)
+            end
+        end)
+        
+        if player.Character then
+            if espEnabled then
+                createESP(player)
+            end
+        end
+    end
+end
+
+game:GetService("UserInputService").WindowFocused:Connect(function()
+    if not MenuFrame.Visible then
+        MenuFrame.Visible = true
+    end
+end)
+
+game:GetService("UserInputService").WindowFocusReleased:Connect(function()
+    if MenuFrame.Visible then
+        MenuFrame.Visible = false
     end
 end)
 
 DeltaGUI.Destroying:Connect(function()
     removeFly()
+    for _, espData in pairs(espBoxes) do
+        if espData and espData.box then espData.box:Destroy() end
+        if espData and espData.nameTag then espData.nameTag:Destroy() end
+    end
 end)
