@@ -26,8 +26,8 @@ Corner.Parent = FloatingButton
 
 local MenuFrame = Instance.new("Frame")
 MenuFrame.Name = "MenuFrame"
-MenuFrame.Size = UDim2.new(0, 280, 0, 400)
-MenuFrame.Position = UDim2.new(0, 90, 0.5, -200)
+MenuFrame.Size = UDim2.new(0, 280, 0, 350)
+MenuFrame.Position = UDim2.new(0, 90, 0.5, -175)
 MenuFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MenuFrame.BackgroundTransparency = 0.1
 MenuFrame.BorderSizePixel = 0
@@ -82,7 +82,7 @@ local ScrollingFrame = Instance.new("ScrollingFrame")
 ScrollingFrame.Size = UDim2.new(1, -10, 1, -50)
 ScrollingFrame.Position = UDim2.new(0, 5, 0, 45)
 ScrollingFrame.BackgroundTransparency = 1
-ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 400)
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 350)
 ScrollingFrame.ScrollBarThickness = 6
 ScrollingFrame.Parent = MenuFrame
 
@@ -109,93 +109,19 @@ end
 
 local ESPButton = createButton("ESPButton", UDim2.new(0, 10, 0, 10), "ESP: OFF")
 local JumpButton = createButton("JumpButton", UDim2.new(0, 10, 0, 55), "INFINITE JUMP: OFF")
-local HealthButton = createButton("HealthButton", UDim2.new(0, 10, 0, 155), "HEALTH 9999: OFF")
-local FreeItemsButton = createButton("FreeItemsButton", UDim2.new(0, 10, 0, 200), "FREE ITEMS: OFF")
-local DeveloperButton = createButton("DeveloperButton", UDim2.new(0, 10, 0, 285), "DEVELOPER", Color3.fromRGB(100, 0, 200))
-
-local SpeedFrame = Instance.new("Frame")
-SpeedFrame.Name = "SpeedFrame"
-SpeedFrame.Size = UDim2.new(1, -20, 0, 70)
-SpeedFrame.Position = UDim2.new(0, 10, 0, 100)
-SpeedFrame.BackgroundTransparency = 1
-SpeedFrame.Parent = ScrollingFrame
-
-local SpeedLabel = Instance.new("TextLabel")
-SpeedLabel.Size = UDim2.new(1, 0, 0, 20)
-SpeedLabel.Position = UDim2.new(0, 0, 0, 0)
-SpeedLabel.BackgroundTransparency = 1
-SpeedLabel.Text = "SPEED: 16"
-SpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedLabel.TextSize = 12
-SpeedLabel.Font = Enum.Font.Gotham
-SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
-SpeedLabel.Parent = SpeedFrame
-
-local SpeedSlider = Instance.new("Frame")
-SpeedSlider.Size = UDim2.new(1, 0, 0, 20)
-SpeedSlider.Position = UDim2.new(0, 0, 0, 25)
-SpeedSlider.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-SpeedSlider.BackgroundTransparency = 0.3
-SpeedSlider.Parent = SpeedFrame
-
-local SpeedSliderCorner = Instance.new("UICorner")
-SpeedSliderCorner.CornerRadius = UDim.new(0, 10)
-SpeedSliderCorner.Parent = SpeedSlider
-
-local SpeedFill = Instance.new("Frame")
-SpeedFill.Size = UDim2.new(0, 0, 1, 0)
-SpeedFill.Position = UDim2.new(0, 0, 0, 0)
-SpeedFill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-SpeedFill.BorderSizePixel = 0
-SpeedFill.Parent = SpeedSlider
-
-local SpeedFillCorner = Instance.new("UICorner")
-SpeedFillCorner.CornerRadius = UDim.new(0, 10)
-SpeedFillCorner.Parent = SpeedFill
-
-local SpeedHandle = Instance.new("Frame")
-SpeedHandle.Size = UDim2.new(0, 20, 1, 0)
-SpeedHandle.Position = UDim2.new(0, 0, 0, 0)
-SpeedHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-SpeedHandle.BorderSizePixel = 0
-SpeedHandle.Parent = SpeedSlider
-
-local SpeedHandleCorner = Instance.new("UICorner")
-SpeedHandleCorner.CornerRadius = UDim.new(0, 10)
-SpeedHandleCorner.Parent = SpeedHandle
-
-local SpeedButton = Instance.new("TextButton")
-SpeedButton.Size = UDim2.new(1, 0, 1, 0)
-SpeedButton.Position = UDim2.new(0, 0, 0, 0)
-SpeedButton.BackgroundTransparency = 1
-SpeedButton.Text = ""
-SpeedButton.Parent = SpeedSlider
-
-local SpeedToggle = Instance.new("TextButton")
-SpeedToggle.Size = UDim2.new(1, 0, 0, 20)
-SpeedToggle.Position = UDim2.new(0, 0, 0, 50)
-SpeedToggle.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-SpeedToggle.BackgroundTransparency = 0.3
-SpeedToggle.Text = "SPEED: OFF"
-SpeedToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedToggle.TextSize = 12
-SpeedToggle.Font = Enum.Font.Gotham
-SpeedToggle.Parent = SpeedFrame
-
-local SpeedToggleCorner = Instance.new("UICorner")
-SpeedToggleCorner.CornerRadius = UDim.new(0, 8)
-SpeedToggleCorner.Parent = SpeedToggle
+local SpeedButton = createButton("SpeedButton", UDim2.new(0, 10, 0, 100), "SPEED: OFF")
+local HealthButton = createButton("HealthButton", UDim2.new(0, 10, 0, 145), "HEALTH 9999: OFF")
+local AmmoButton = createButton("AmmoButton", UDim2.new(0, 10, 0, 190), "INFINITE AMMO: OFF")
+local DeveloperButton = createButton("DeveloperButton", UDim2.new(0, 10, 0, 235), "DEVELOPER", Color3.fromRGB(100, 0, 200))
 
 local menuOpen = false
 local espEnabled = false
 local jumpEnabled = false
 local speedEnabled = false
 local healthEnabled = false
-local freeItemsEnabled = false
-local currentSpeed = 16
-local espBoxes = {}
-local speedDragging = false
+local ammoEnabled = false
 local originalHealth = nil
+local espBoxes = {}
 
 local colors = {
     Color3.fromRGB(255, 0, 0), Color3.fromRGB(0, 255, 0), Color3.fromRGB(0, 0, 255),
@@ -203,13 +129,6 @@ local colors = {
     Color3.fromRGB(255, 128, 0), Color3.fromRGB(128, 0, 255)
 }
 local colorIndex = 1
-
-local function updateSpeedDisplay()
-    SpeedLabel.Text = "SPEED: "..math.floor(currentSpeed)
-    local percentage = (currentSpeed - 16) / (100 - 16)
-    SpeedFill.Size = UDim2.new(percentage, 0, 1, 0)
-    SpeedHandle.Position = UDim2.new(percentage, -10, 0, 0)
-end
 
 local function createESP(player)
     if espBoxes[player] then return end
@@ -265,6 +184,12 @@ JumpButton.MouseButton1Click:Connect(function()
     JumpButton.BackgroundColor3 = jumpEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
 end)
 
+SpeedButton.MouseButton1Click:Connect(function()
+    speedEnabled = not speedEnabled
+    SpeedButton.Text = "SPEED: "..(speedEnabled and "ON" or "OFF")
+    SpeedButton.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
+end)
+
 HealthButton.MouseButton1Click:Connect(function()
     healthEnabled = not healthEnabled
     HealthButton.Text = "HEALTH 9999: "..(healthEnabled and "ON" or "OFF")
@@ -301,78 +226,10 @@ HealthButton.MouseButton1Click:Connect(function()
     end
 end)
 
-FreeItemsButton.MouseButton1Click:Connect(function()
-    freeItemsEnabled = not freeItemsEnabled
-    FreeItemsButton.Text = "FREE ITEMS: "..(freeItemsEnabled and "ON" or "OFF")
-    FreeItemsButton.BackgroundColor3 = freeItemsEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
-    
-    if freeItemsEnabled then
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local MarketplaceService = game:GetService("MarketplaceService")
-        
-        local function interceptRemoteEvents()
-            for _, remote in pairs(ReplicatedStorage:GetDescendants()) do
-                if remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction") then
-                    local name = remote.Name:lower()
-                    if name:find("buy") or name:find("purchase") or name:find("shop") or name:find("store") then
-                        local originalFireServer = remote.FireServer
-                        local originalInvokeServer = remote.InvokeServer
-                        
-                        if remote:IsA("RemoteEvent") then
-                            remote.FireServer = function(self, ...)
-                                local args = {...}
-                                for i, arg in pairs(args) do
-                                    if type(arg) == "number" and arg > 0 then
-                                        args[i] = 0
-                                    end
-                                end
-                                return originalFireServer(self, unpack(args))
-                            end
-                        elseif remote:IsA("RemoteFunction") then
-                            remote.InvokeServer = function(self, ...)
-                                local args = {...}
-                                for i, arg in pairs(args) do
-                                    if type(arg) == "number" and arg > 0 then
-                                        args[i] = 0
-                                    end
-                                end
-                                return originalInvokeServer(self, unpack(args))
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        
-        interceptRemoteEvents()
-        
-        ReplicatedStorage.DescendantAdded:Connect(function(descendant)
-            if freeItemsEnabled then
-                interceptRemoteEvents()
-            end
-        end)
-        
-        local originalPromptPurchase = MarketplaceService.PromptPurchase
-        MarketplaceService.PromptPurchase = function(...)
-            return
-        end
-        
-        local originalPromptGamePassPurchase = MarketplaceService.PromptGamePassPurchase
-        MarketplaceService.PromptGamePassPurchase = function(...)
-            return
-        end
-        
-        local originalPromptProductPurchase = MarketplaceService.PromptProductPurchase
-        MarketplaceService.PromptProductPurchase = function(...)
-            return
-        end
-    end
-end)
-
-SpeedToggle.MouseButton1Click:Connect(function()
-    speedEnabled = not speedEnabled
-    SpeedToggle.Text = "SPEED: "..(speedEnabled and "ON" or "OFF")
-    SpeedToggle.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
+AmmoButton.MouseButton1Click:Connect(function()
+    ammoEnabled = not ammoEnabled
+    AmmoButton.Text = "INFINITE AMMO: "..(ammoEnabled and "ON" or "OFF")
+    AmmoButton.BackgroundColor3 = ammoEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(30, 30, 40)
 end)
 
 DeveloperButton.MouseButton1Click:Connect(function()
@@ -389,29 +246,6 @@ DeveloperButton.MouseButton1Click:Connect(function()
     end
 end)
 
-SpeedButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        speedDragging = true
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        speedDragging = false
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if speedDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local mousePos = UserInputService:GetMouseLocation()
-        local sliderPos = SpeedSlider.AbsolutePosition
-        local sliderSize = SpeedSlider.AbsoluteSize
-        local relativeX = math.clamp((mousePos.X - sliderPos.X) / sliderSize.X, 0, 1)
-        currentSpeed = math.floor(16 + (relativeX * 84))
-        updateSpeedDisplay()
-    end
-end)
-
 UserInputService.JumpRequest:Connect(function()
     if jumpEnabled and Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
         Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
@@ -422,12 +256,14 @@ RunService.Heartbeat:Connect(function()
     local localPlayer = Players.LocalPlayer
     
     if localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
+        -- Speed functionality
         if speedEnabled then
-            localPlayer.Character.Humanoid.WalkSpeed = currentSpeed
+            localPlayer.Character.Humanoid.WalkSpeed = 160
         else
-            localPlayer.Character.Humanoid.WalkSpeed = 150
+            localPlayer.Character.Humanoid.WalkSpeed = 16
         end
         
+        -- Health functionality
         if healthEnabled then
             local humanoid = localPlayer.Character.Humanoid
             if humanoid.Health < 9999 then
@@ -435,6 +271,55 @@ RunService.Heartbeat:Connect(function()
             end
             if humanoid.MaxHealth < 9999 then
                 humanoid.MaxHealth = 9999
+            end
+        end
+        
+        -- Infinite Ammo functionality
+        if ammoEnabled then
+            for _, tool in pairs(localPlayer.Character:GetChildren()) do
+                if tool:IsA("Tool") then
+                    -- Check for common ammo properties
+                    for _, child in pairs(tool:GetDescendants()) do
+                        if child:IsA("IntValue") or child:IsA("NumberValue") then
+                            local name = child.Name:lower()
+                            if name:find("ammo") or name:find("bullet") or name:find("shot") or name:find("round") then
+                                if child.Value < 999 then
+                                    child.Value = 999
+                                end
+                            end
+                        elseif child:IsA("StringValue") and child.Name:lower():find("ammo") then
+                            child.Value = "999"
+                        end
+                    end
+                    
+                    -- Also check for ammo in tool itself
+                    for _, value in pairs(tool:GetChildren()) do
+                        if value:IsA("IntValue") or value:IsA("NumberValue") then
+                            local name = value.Name:lower()
+                            if name:find("ammo") or name:find("bullet") or name:find("shot") or name:find("round") then
+                                if value.Value < 999 then
+                                    value.Value = 999
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            
+            -- Check backpack tools
+            for _, tool in pairs(localPlayer.Backpack:GetChildren()) do
+                if tool:IsA("Tool") then
+                    for _, child in pairs(tool:GetDescendants()) do
+                        if child:IsA("IntValue") or child:IsA("NumberValue") then
+                            local name = child.Name:lower()
+                            if name:find("ammo") or name:find("bullet") or name:find("shot") or name:find("round") then
+                                if child.Value < 999 then
+                                    child.Value = 999
+                                end
+                            end
+                        end
+                    end
+                end
             end
         end
     end
@@ -498,5 +383,3 @@ Players.PlayerRemoving:Connect(function(player)
         removeESP(player)
     end
 end)
-
-updateSpeedDisplay()
