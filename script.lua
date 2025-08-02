@@ -1,18 +1,20 @@
--- الخدمات المطلوبة
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
+local Camera = workspace.CurrentCamera
 
--- المتغيرات الأساسية
 local LocalPlayer = Players.LocalPlayer
 local espEnabled = false
 local espBoxes = {}
 local menuOpen = false
 local isDragging = false
+local speedEnabled = false
+local aimbotEnabled = false
+local currentSpeed = 16
+local aimbotCircle = nil
 
--- إنشاء واجهة المستخدم الرئيسية
 local function createMainGUI()
     local DeltaGUI = Instance.new("ScreenGui")
     DeltaGUI.Name = "EnhancedHackGUI"
@@ -23,7 +25,6 @@ local function createMainGUI()
     return DeltaGUI
 end
 
--- إنشاء الزر العائم مع تحسينات
 local function createFloatingButton(parent)
     local FloatingButton = Instance.new("ImageButton")
     FloatingButton.Name = "FloatingButton"
@@ -36,7 +37,6 @@ local function createFloatingButton(parent)
     FloatingButton.ImageColor3 = Color3.fromRGB(0, 200, 255)
     FloatingButton.Parent = parent
     
-    -- إضافة تأثيرات بصرية
     local Corner = Instance.new("UICorner")
     Corner.CornerRadius = UDim.new(0, 35)
     Corner.Parent = FloatingButton
@@ -47,7 +47,6 @@ local function createFloatingButton(parent)
     Stroke.Transparency = 0.5
     Stroke.Parent = FloatingButton
     
-    -- تأثير الضوء
     local Glow = Instance.new("ImageLabel")
     Glow.Name = "Glow"
     Glow.Size = UDim2.new(1.5, 0, 1.5, 0)
@@ -61,19 +60,17 @@ local function createFloatingButton(parent)
     return FloatingButton
 end
 
--- إنشاء القائمة الرئيسية مع تحسينات
 local function createMainMenu(parent)
     local MenuFrame = Instance.new("Frame")
     MenuFrame.Name = "MenuFrame"
-    MenuFrame.Size = UDim2.new(0, 350, 0, 400)
-    MenuFrame.Position = UDim2.new(0, 100, 0.5, -200)
+    MenuFrame.Size = UDim2.new(0, 380, 0, 480)
+    MenuFrame.Position = UDim2.new(0, 100, 0.5, -240)
     MenuFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
     MenuFrame.BackgroundTransparency = 0.05
     MenuFrame.BorderSizePixel = 0
     MenuFrame.Visible = false
     MenuFrame.Parent = parent
     
-    -- إضافة تأثيرات بصرية للقائمة
     local MenuCorner = Instance.new("UICorner")
     MenuCorner.CornerRadius = UDim.new(0, 15)
     MenuCorner.Parent = MenuFrame
@@ -84,7 +81,6 @@ local function createMainMenu(parent)
     MenuStroke.Transparency = 0.3
     MenuStroke.Parent = MenuFrame
     
-    -- إضافة ظل
     local Shadow = Instance.new("ImageLabel")
     Shadow.Name = "Shadow"
     Shadow.Size = UDim2.new(1, 20, 1, 20)
@@ -100,7 +96,6 @@ local function createMainMenu(parent)
     return MenuFrame
 end
 
--- إنشاء شريط العنوان المحسن
 local function createTitleBar(parent)
     local TitleBar = Instance.new("Frame")
     TitleBar.Name = "TitleBar"
@@ -115,7 +110,6 @@ local function createTitleBar(parent)
     TitleCorner.CornerRadius = UDim.new(0, 15)
     TitleCorner.Parent = TitleBar
     
-    -- إضافة تدرج لوني
     local Gradient = Instance.new("UIGradient")
     Gradient.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 150, 255)),
@@ -124,19 +118,17 @@ local function createTitleBar(parent)
     Gradient.Rotation = 45
     Gradient.Parent = TitleBar
     
-    -- عنوان محسن
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Size = UDim2.new(1, -100, 1, 0)
     TitleLabel.Position = UDim2.new(0, 15, 0, 0)
     TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Text = "🚀 ENHANCED HACK GUI"
+    TitleLabel.Text = "🚀 ENHANCED HACK GUI V2"
     TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     TitleLabel.TextSize = 18
     TitleLabel.Font = Enum.Font.GothamBold
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = TitleBar
     
-    -- زر الإغلاق المحسن
     local CloseButton = Instance.new("TextButton")
     CloseButton.Name = "CloseButton"
     CloseButton.Size = UDim2.new(0, 35, 0, 35)
@@ -156,27 +148,24 @@ local function createTitleBar(parent)
     return TitleBar, CloseButton
 end
 
--- إنشاء إطار التمرير المحسن
 local function createScrollingFrame(parent)
     local ScrollingFrame = Instance.new("ScrollingFrame")
     ScrollingFrame.Size = UDim2.new(1, -20, 1, -70)
     ScrollingFrame.Position = UDim2.new(0, 10, 0, 60)
     ScrollingFrame.BackgroundTransparency = 1
-    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 500)
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 650)
     ScrollingFrame.ScrollBarThickness = 8
     ScrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
     ScrollingFrame.Parent = parent
     
-    -- تخطيط الأزرار
     local UIListLayout = Instance.new("UIListLayout")
     UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    UIListLayout.Padding = UDim.new(0, 10)
+    UIListLayout.Padding = UDim.new(0, 15)
     UIListLayout.Parent = ScrollingFrame
     
     return ScrollingFrame
 end
 
--- دالة محسنة لإنشاء الأزرار
 local function createEnhancedButton(parent, name, text, color, icon)
     local button = Instance.new("TextButton")
     button.Name = name
@@ -200,7 +189,6 @@ local function createEnhancedButton(parent, name, text, color, icon)
     buttonStroke.Transparency = 0.5
     buttonStroke.Parent = button
     
-    -- تأثير التمرير
     button.MouseEnter:Connect(function()
         local tween = TweenService:Create(button, TweenInfo.new(0.2), {
             BackgroundTransparency = 0.1,
@@ -220,7 +208,162 @@ local function createEnhancedButton(parent, name, text, color, icon)
     return button
 end
 
--- نظام ESP محسن
+local function createAimbotCircle()
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "AimbotCircle"
+    screenGui.Parent = game.CoreGui
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    local circle = Instance.new("Frame")
+    circle.Name = "Circle"
+    circle.Size = UDim2.new(0, 400, 0, 400)
+    circle.Position = UDim2.new(0.5, -200, 0.5, -200)
+    circle.BackgroundTransparency = 1
+    circle.Parent = screenGui
+    
+    local function createCorner(position, rotation)
+        local corner = Instance.new("Frame")
+        corner.Size = UDim2.new(0, 40, 0, 4)
+        corner.Position = position
+        corner.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        corner.BorderSizePixel = 0
+        corner.Parent = circle
+        corner.Rotation = rotation
+        
+        local cornerCorner = Instance.new("UICorner")
+        cornerCorner.CornerRadius = UDim.new(0, 2)
+        cornerCorner.Parent = corner
+        
+        return corner
+    end
+    
+    createCorner(UDim2.new(0.5, -20, 0, -2), 0)
+    createCorner(UDim2.new(1, -2, 0.5, -20), 90)
+    createCorner(UDim2.new(0.5, -20, 1, -2), 0)
+    createCorner(UDim2.new(0, -2, 0.5, -20), 90)
+    
+    return screenGui
+end
+
+local function createSpeedSlider(parent, speedButton)
+    local SliderFrame = Instance.new("Frame")
+    SliderFrame.Name = "SpeedSliderFrame"
+    SliderFrame.Size = UDim2.new(1, -20, 0, 60)
+    SliderFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+    SliderFrame.BackgroundTransparency = 0.3
+    SliderFrame.BorderSizePixel = 0
+    SliderFrame.Visible = false
+    SliderFrame.Parent = parent
+    
+    local SliderCorner = Instance.new("UICorner")
+    SliderCorner.CornerRadius = UDim.new(0, 10)
+    SliderCorner.Parent = SliderFrame
+    
+    local SpeedLabel = Instance.new("TextLabel")
+    SpeedLabel.Size = UDim2.new(1, 0, 0, 20)
+    SpeedLabel.Position = UDim2.new(0, 0, 0, 5)
+    SpeedLabel.BackgroundTransparency = 1
+    SpeedLabel.Text = "🏃 السرعة: 16"
+    SpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SpeedLabel.TextSize = 12
+    SpeedLabel.Font = Enum.Font.Gotham
+    SpeedLabel.Parent = SliderFrame
+    
+    local SliderBG = Instance.new("Frame")
+    SliderBG.Name = "SliderBG"
+    SliderBG.Size = UDim2.new(1, -20, 0, 8)
+    SliderBG.Position = UDim2.new(0, 10, 0, 30)
+    SliderBG.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+    SliderBG.BorderSizePixel = 0
+    SliderBG.Parent = SliderFrame
+    
+    local SliderBGCorner = Instance.new("UICorner")
+    SliderBGCorner.CornerRadius = UDim.new(0, 4)
+    SliderBGCorner.Parent = SliderBG
+    
+    local SliderFill = Instance.new("Frame")
+    SliderFill.Name = "SliderFill"
+    SliderFill.Size = UDim2.new(0, 0, 1, 0)
+    SliderFill.Position = UDim2.new(0, 0, 0, 0)
+    SliderFill.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+    SliderFill.BorderSizePixel = 0
+    SliderFill.Parent = SliderBG
+    
+    local SliderFillCorner = Instance.new("UICorner")
+    SliderFillCorner.CornerRadius = UDim.new(0, 4)
+    SliderFillCorner.Parent = SliderFill
+    
+    local SliderHandle = Instance.new("Frame")
+    SliderHandle.Name = "SliderHandle"
+    SliderHandle.Size = UDim2.new(0, 16, 0, 16)
+    SliderHandle.Position = UDim2.new(0, -8, 0, -4)
+    SliderHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    SliderHandle.BorderSizePixel = 0
+    SliderHandle.Parent = SliderBG
+    
+    local HandleCorner = Instance.new("UICorner")
+    HandleCorner.CornerRadius = UDim.new(0, 8)
+    HandleCorner.Parent = SliderHandle
+    
+    local HandleStroke = Instance.new("UIStroke")
+    HandleStroke.Color = Color3.fromRGB(0, 200, 100)
+    HandleStroke.Thickness = 2
+    HandleStroke.Parent = SliderHandle
+    
+    local minSpeed = 16
+    local maxSpeed = 150
+    local draggingSlider = false
+    
+    local function updateSlider(value)
+        local percentage = (value - minSpeed) / (maxSpeed - minSpeed)
+        percentage = math.clamp(percentage, 0, 1)
+        
+        SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
+        SliderHandle.Position = UDim2.new(percentage, -8, 0, -4)
+        
+        currentSpeed = math.floor(minSpeed + (maxSpeed - minSpeed) * percentage)
+        SpeedLabel.Text = "🏃 السرعة: " .. currentSpeed
+        
+        if speedEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = currentSpeed
+        end
+    end
+    
+    local function getMousePercentage()
+        local mouse = LocalPlayer:GetMouse()
+        local relativePos = mouse.X - SliderBG.AbsolutePosition.X
+        local percentage = relativePos / SliderBG.AbsoluteSize.X
+        return math.clamp(percentage, 0, 1)
+    end
+    
+    SliderBG.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            draggingSlider = true
+            local percentage = getMousePercentage()
+            local value = minSpeed + (maxSpeed - minSpeed) * percentage
+            updateSlider(value)
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if draggingSlider and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local percentage = getMousePercentage()
+            local value = minSpeed + (maxSpeed - minSpeed) * percentage
+            updateSlider(value)
+        end
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            draggingSlider = false
+        end
+    end)
+    
+    updateSlider(16)
+    
+    return SliderFrame, SpeedLabel
+end
+
 local function createAdvancedESP(player)
     if espBoxes[player] or not player.Character then return end
     
@@ -228,7 +371,6 @@ local function createAdvancedESP(player)
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
     if not humanoidRootPart then return end
     
-    -- إنشاء Highlight
     local espBox = Instance.new("Highlight")
     espBox.Name = player.Name.."_ESP"
     espBox.OutlineColor = Color3.fromRGB(255, 100, 100)
@@ -239,7 +381,6 @@ local function createAdvancedESP(player)
     espBox.Parent = character
     espBox.Adornee = character
     
-    -- إضافة نص المسافة
     local billboardGui = Instance.new("BillboardGui")
     billboardGui.Name = player.Name.."_DistanceLabel"
     billboardGui.Size = UDim2.new(0, 200, 0, 50)
@@ -259,7 +400,6 @@ local function createAdvancedESP(player)
     
     espBoxes[player] = {highlight = espBox, billboard = billboardGui}
     
-    -- تحديث المسافة
     local connection
     connection = RunService.Heartbeat:Connect(function()
         if not player.Character or not LocalPlayer.Character then
@@ -289,7 +429,6 @@ local function removeAdvancedESP(player)
     end
 end
 
--- دالة تبديل ESP محسنة
 local function toggleAdvancedESP(button)
     espEnabled = not espEnabled
     button.Text = (espEnabled and "👁️ ESP: ON" or "👁️ ESP: OFF")
@@ -308,33 +447,116 @@ local function toggleAdvancedESP(button)
     end
 end
 
--- ميزات إضافية جديدة
-local function createSpeedHack(button)
-    local speedEnabled = false
-    local originalWalkSpeed = 16
+local function isPlayerVisible(player)
+    if not player.Character or not player.Character:FindFirstChild("Head") then
+        return false
+    end
     
+    local localCharacter = LocalPlayer.Character
+    if not localCharacter or not localCharacter:FindFirstChild("Head") then
+        return false
+    end
+    
+    local rayOrigin = localCharacter.Head.Position
+    local rayDirection = (player.Character.Head.Position - rayOrigin).Unit * 1000
+    
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+    raycastParams.FilterDescendantsInstances = {localCharacter, player.Character}
+    
+    local raycastResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+    
+    return raycastResult == nil
+end
+
+local function createAimbot()
+    local aimbotConnection
+    
+    local function getClosestPlayerToMouse()
+        local closestPlayer = nil
+        local shortestDistance = math.huge
+        local mouse = LocalPlayer:GetMouse()
+        
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+                if isPlayerVisible(player) then
+                    local head = player.Character.Head
+                    local screenPoint = Camera:WorldToScreenPoint(head.Position)
+                    local distance = (Vector2.new(mouse.X, mouse.Y) - Vector2.new(screenPoint.X, screenPoint.Y)).Magnitude
+                    
+                    if distance < shortestDistance and distance <= 300 then
+                        closestPlayer = player
+                        shortestDistance = distance
+                    end
+                end
+            end
+        end
+        
+        return closestPlayer
+    end
+    
+    local function aimAtPlayer(player)
+        if not player.Character or not player.Character:FindFirstChild("Head") then return end
+        
+        local targetHead = player.Character.Head
+        local targetPosition = targetHead.Position + Vector3.new(0, 0.1, 0)
+        
+        local currentCFrame = Camera.CFrame
+        local targetCFrame = CFrame.lookAt(Camera.CFrame.Position, targetPosition)
+        
+        local tween = TweenService:Create(Camera, 
+            TweenInfo.new(0.1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), 
+            {CFrame = targetCFrame}
+        )
+        tween:Play()
+    end
+    
+    local function toggleAimbot(button)
+        aimbotEnabled = not aimbotEnabled
+        button.Text = (aimbotEnabled and "🎯 AIMBOT: ON" or "🎯 AIMBOT: OFF")
+        button.BackgroundColor3 = aimbotEnabled and Color3.fromRGB(200, 50, 50) or Color3.fromRGB(40, 40, 55)
+        
+        if aimbotEnabled then
+            aimbotCircle = createAimbotCircle()
+            aimbotConnection = RunService.RenderStepped:Connect(function()
+                if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
+                    local targetPlayer = getClosestPlayerToMouse()
+                    if targetPlayer then
+                        aimAtPlayer(targetPlayer)
+                    end
+                end
+            end)
+        else
+            if aimbotConnection then
+                aimbotConnection:Disconnect()
+                aimbotConnection = nil
+            end
+            if aimbotCircle then
+                aimbotCircle:Destroy()
+                aimbotCircle = nil
+            end
+        end
+    end
+    
+    return toggleAimbot
+end
+
+local function createSpeedHack(button, sliderFrame)
     button.MouseButton1Click:Connect(function()
         speedEnabled = not speedEnabled
         button.Text = speedEnabled and "🏃 SPEED: ON" or "🏃 SPEED: OFF"
         button.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(40, 40, 55)
         
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = speedEnabled and 50 or originalWalkSpeed
-        end
-    end)
-end
-
-local function createJumpHack(button)
-    local jumpEnabled = false
-    local originalJumpPower = 50
-    
-    button.MouseButton1Click:Connect(function()
-        jumpEnabled = not jumpEnabled
-        button.Text = jumpEnabled and "🦘 JUMP: ON" or "🦘 JUMP: OFF"
-        button.BackgroundColor3 = jumpEnabled and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(40, 40, 55)
+        sliderFrame.Visible = speedEnabled
         
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.JumpPower = jumpEnabled and 120 or originalJumpPower
+        if speedEnabled then
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = currentSpeed
+            end
+        else
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = 16
+            end
         end
     end)
 end
@@ -359,7 +581,6 @@ local function createFullbright(button)
     end)
 end
 
--- إنشاء الواجهة الكاملة
 local function initializeGUI()
     local mainGUI = createMainGUI()
     local floatingButton = createFloatingButton(mainGUI)
@@ -367,20 +588,23 @@ local function initializeGUI()
     local titleBar, closeButton = createTitleBar(menuFrame)
     local scrollingFrame = createScrollingFrame(menuFrame)
     
-    -- إنشاء الأزرار
     local espButton = createEnhancedButton(scrollingFrame, "ESPButton", "ESP: OFF", nil, "👁️")
     local speedButton = createEnhancedButton(scrollingFrame, "SpeedButton", "SPEED: OFF", nil, "🏃")
-    local jumpButton = createEnhancedButton(scrollingFrame, "JumpButton", "JUMP: OFF", nil, "🦘")
+    
+    local speedSlider, speedLabel = createSpeedSlider(scrollingFrame, speedButton)
+    
+    local aimbotButton = createEnhancedButton(scrollingFrame, "AimbotButton", "AIMBOT: OFF", Color3.fromRGB(150, 50, 50), "🎯")
     local fullbrightButton = createEnhancedButton(scrollingFrame, "FullbrightButton", "FULLBRIGHT: OFF", nil, "💡")
     local developerButton = createEnhancedButton(scrollingFrame, "DeveloperButton", "DEVELOPER", Color3.fromRGB(120, 0, 200), "👨‍💻")
     
-    -- ربط الوظائف
     espButton.MouseButton1Click:Connect(function() toggleAdvancedESP(espButton) end)
-    createSpeedHack(speedButton)
-    createJumpHack(jumpButton)
+    createSpeedHack(speedButton, speedSlider)
+    
+    local toggleAimbotFunc = createAimbot()
+    aimbotButton.MouseButton1Click:Connect(function() toggleAimbotFunc(aimbotButton) end)
+    
     createFullbright(fullbrightButton)
     
-    -- زر المطور مع تأثيرات محسنة
     local colors = {
         Color3.fromRGB(255, 100, 100),
         Color3.fromRGB(100, 255, 100),
@@ -405,11 +629,10 @@ local function initializeGUI()
         end
     end)
     
-    -- التحكم في فتح/إغلاق القائمة
     closeButton.MouseButton1Click:Connect(function()
         local tween = TweenService:Create(menuFrame, TweenInfo.new(0.3), {
             Size = UDim2.new(0, 0, 0, 0),
-            Position = UDim2.new(0, 225, 0.5, 0)
+            Position = UDim2.new(0, 240, 0.5, 0)
         })
         tween:Play()
         tween.Completed:Connect(function()
@@ -422,17 +645,17 @@ local function initializeGUI()
         menuOpen = not menuOpen
         if menuOpen then
             menuFrame.Size = UDim2.new(0, 0, 0, 0)
-            menuFrame.Position = UDim2.new(0, 225, 0.5, 0)
+            menuFrame.Position = UDim2.new(0, 240, 0.5, 0)
             menuFrame.Visible = true
             local tween = TweenService:Create(menuFrame, TweenInfo.new(0.3), {
-                Size = UDim2.new(0, 350, 0, 400),
-                Position = UDim2.new(0, 100, 0.5, -200)
+                Size = UDim2.new(0, 380, 0, 480),
+                Position = UDim2.new(0, 100, 0.5, -240)
             })
             tween:Play()
         else
             local tween = TweenService:Create(menuFrame, TweenInfo.new(0.3), {
                 Size = UDim2.new(0, 0, 0, 0),
-                Position = UDim2.new(0, 225, 0.5, 0)
+                Position = UDim2.new(0, 240, 0.5, 0)
             })
             tween:Play()
             tween.Completed:Connect(function()
@@ -441,7 +664,6 @@ local function initializeGUI()
         end
     end)
     
-    -- اختصار لوحة المفاتيح
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if gameProcessed then return end
         if input.KeyCode == Enum.KeyCode.RightControl then
@@ -449,7 +671,6 @@ local function initializeGUI()
         end
     end)
     
-    -- تمكين السحب المحسن
     local dragStart, startPos
     titleBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -478,20 +699,22 @@ local function initializeGUI()
             )
         end
     end)
+    
+    LocalPlayer.CharacterAdded:Connect(function(character)
+        character:WaitForChild("Humanoid")
+        if speedEnabled then
+            character.Humanoid.WalkSpeed = currentSpeed
+        end
+    end)
 end
 
--- تشغيل الواجهة
 initializeGUI()
 
--- إضافة معالج للاعبين الجدد
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
         if espEnabled then
-            wait(1) -- انتظار تحميل الشخصية
+            wait(1)
             createAdvancedESP(player)
         end
     end)
 end)
-
-print("✅ Enhanced Hack GUI تم تحميله بنجاح!")
-print("🎮 استخدم Right Control لفتح/إغلاق القائمة")
