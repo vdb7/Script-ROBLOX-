@@ -13,13 +13,11 @@ local isDragging = false
 local speedEnabled = false
 local currentSpeed = 16
 
--- Main GUI Creation
 local DeltaGUI = Instance.new("ScreenGui")
 DeltaGUI.Name = "EnhancedHackGUI"
 DeltaGUI.Parent = game.CoreGui
 DeltaGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Floating Button
 local FloatingButton = Instance.new("ImageButton")
 FloatingButton.Name = "FloatingButton"
 FloatingButton.Size = UDim2.new(0, 80, 0, 80)
@@ -41,7 +39,6 @@ Stroke.Thickness = 3
 Stroke.Transparency = 0.3
 Stroke.Parent = FloatingButton
 
--- Main Menu Frame
 local MenuFrame = Instance.new("Frame")
 MenuFrame.Name = "MenuFrame"
 MenuFrame.Size = UDim2.new(0, 420, 0, 520)
@@ -56,7 +53,6 @@ local MenuCorner = Instance.new("UICorner")
 MenuCorner.CornerRadius = UDim.new(0, 18)
 MenuCorner.Parent = MenuFrame
 
--- Title Bar
 local TitleBar = Instance.new("Frame")
 TitleBar.Name = "TitleBar"
 TitleBar.Size = UDim2.new(1, 0, 0, 55)
@@ -97,7 +93,6 @@ local CloseCorner = Instance.new("UICorner")
 CloseCorner.CornerRadius = UDim.new(0, 20)
 CloseCorner.Parent = CloseButton
 
--- Scrolling Frame for buttons
 local ScrollingFrame = Instance.new("ScrollingFrame")
 ScrollingFrame.Size = UDim2.new(1, -25, 1, -75)
 ScrollingFrame.Position = UDim2.new(0, 12.5, 0, 65)
@@ -112,7 +107,6 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 18)
 UIListLayout.Parent = ScrollingFrame
 
--- Function to create buttons
 local function createButton(name, text, color, icon)
     local button = Instance.new("TextButton")
     button.Name = name
@@ -147,7 +141,6 @@ local function createButton(name, text, color, icon)
     return button
 end
 
--- Speed Control Frame
 local SpeedFrame = Instance.new("Frame")
 SpeedFrame.Name = "SpeedFrame"
 SpeedFrame.Size = UDim2.new(1, -25, 0, 80)
@@ -198,7 +191,31 @@ local ButtonCorner = Instance.new("UICorner")
 ButtonCorner.CornerRadius = UDim.new(0, 8)
 ButtonCorner.Parent = SpeedButton
 
--- ESP Functionality
+local SpeedToggleButton = createButton("SpeedToggleButton", "🏃 SPEED: OFF", nil, "🏃")
+SpeedToggleButton.MouseButton1Click:Connect(function()
+    speedEnabled = not speedEnabled
+    SpeedToggleButton.Text = speedEnabled and "🏃 SPEED: ON" or "🏃 SPEED: OFF"
+    SpeedToggleButton.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(45, 45, 65)
+    
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = speedEnabled and currentSpeed or 16
+    end
+end)
+
+SpeedButton.MouseButton1Click:Connect(function()
+    local newSpeed = tonumber(SpeedBox.Text)
+    if newSpeed and newSpeed >= 16 and newSpeed <= 500 then
+        currentSpeed = newSpeed
+        SpeedLabel.Text = "🏃 SPEED: " .. currentSpeed
+        
+        if speedEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = currentSpeed
+        end
+    else
+        SpeedBox.Text = tostring(currentSpeed)
+    end
+end)
+
 local function createESP(player)
     if espBoxes[player] or not player.Character then return end
     
@@ -221,10 +238,11 @@ local function removeESP(player)
     end
 end
 
-local function toggleESP(button)
+local ESPButton = createButton("ESPButton", "👁️ ESP: OFF", nil, "👁️")
+ESPButton.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
-    button.Text = (espEnabled and "👁️ ESP: ON" or "👁️ ESP: OFF")
-    button.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(45, 45, 65)
+    ESPButton.Text = espEnabled and "👁️ ESP: ON" or "👁️ ESP: OFF"
+    ESPButton.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(45, 45, 65)
     
     if espEnabled then
         for _, player in pairs(Players:GetPlayers()) do
@@ -237,31 +255,8 @@ local function toggleESP(button)
             removeESP(player)
         end
     end
-end
-
--- Speed Functionality
-SpeedButton.MouseButton1Click:Connect(function()
-    local newSpeed = tonumber(SpeedBox.Text)
-    if newSpeed and newSpeed >= 16 and newSpeed <= 500 then
-        currentSpeed = newSpeed
-        SpeedLabel.Text = "🏃 SPEED: " .. currentSpeed
-        
-        if speedEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = currentSpeed
-        end
-    else
-        SpeedBox.Text = tostring(currentSpeed)
-    end
 end)
 
-local function toggleSpeed()
-    speedEnabled = not speedEnabled
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = speedEnabled and currentSpeed or 16
-    end
-end
-
--- Developer Button
 local colors = {
     Color3.fromRGB(255, 120, 120),
     Color3.fromRGB(120, 255, 120),
@@ -275,7 +270,6 @@ local colors = {
 
 local colorIndex = 1
 local DeveloperButton = createButton("DeveloperButton", "DEVELOPER", Color3.fromRGB(140, 0, 220), "👨‍💻")
-
 DeveloperButton.MouseButton1Click:Connect(function()
     colorIndex = colorIndex % #colors + 1
     TweenService:Create(DeveloperButton, TweenInfo.new(0.35), {
@@ -287,11 +281,6 @@ DeveloperButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- ESP Button
-local ESPButton = createButton("ESPButton", "ESP: OFF", nil, "👁️")
-ESPButton.MouseButton1Click:Connect(function() toggleESP(ESPButton) end)
-
--- GUI Controls
 CloseButton.MouseButton1Click:Connect(function()
     local tween = TweenService:Create(MenuFrame, TweenInfo.new(0.35), {
         Size = UDim2.new(0, 0, 0, 0),
@@ -322,7 +311,6 @@ FloatingButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Character Handling
 LocalPlayer.CharacterAdded:Connect(function(character)
     character:WaitForChild("Humanoid")
     if speedEnabled then
@@ -330,7 +318,6 @@ LocalPlayer.CharacterAdded:Connect(function(character)
     end
 end)
 
--- Player Handling
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
         if espEnabled then
@@ -340,7 +327,6 @@ Players.PlayerAdded:Connect(function(player)
     end)
 end)
 
--- Initialize ESP for existing players if enabled
 if espEnabled then
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
