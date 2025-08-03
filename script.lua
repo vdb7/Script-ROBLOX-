@@ -9,12 +9,14 @@ local LocalPlayer = Players.LocalPlayer
 local espEnabled = false
 local espBoxes = {}
 local menuOpen = false
-local isDragging = false
 local speedEnabled = false
 local currentSpeed = 16
 local flyEnabled = false
+local flySpeed = 50
 local bodyVelocity = nil
-local bodyPosition = nil
+local bodyAngularVelocity = nil
+local noClipEnabled = false
+local infiniteJumpEnabled = false
 
 local DeltaGUI = Instance.new("ScreenGui")
 DeltaGUI.Name = "EnhancedHackGUI"
@@ -28,7 +30,7 @@ FloatingButton.Position = UDim2.new(0, 25, 0.5, -25)
 FloatingButton.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
 FloatingButton.BackgroundTransparency = 0.1
 FloatingButton.BorderSizePixel = 0
-FloatingButton.Image = "rbxassetid://3926305904"
+FloatingButton.Image = "rbxassetid://18665684494"
 FloatingButton.ImageColor3 = Color3.fromRGB(0, 220, 255)
 FloatingButton.Parent = DeltaGUI
 
@@ -37,17 +39,17 @@ Corner.CornerRadius = UDim.new(0, 25)
 Corner.Parent = FloatingButton
 
 local Stroke = Instance.new("UIStroke")
-Stroke.Color = Color3.fromRGB(0, 220, 255)
+Stroke.Color = Color3.fromRGB(255, 100, 100)
 Stroke.Thickness = 2
 Stroke.Transparency = 0.3
 Stroke.Parent = FloatingButton
 
 local MenuFrame = Instance.new("Frame")
 MenuFrame.Name = "MenuFrame"
-MenuFrame.Size = UDim2.new(0, 300, 0, 400)
-MenuFrame.Position = UDim2.new(0, 90, 0.5, -200)
-MenuFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-MenuFrame.BackgroundTransparency = 0.02
+MenuFrame.Size = UDim2.new(0, 300, 0, 500)
+MenuFrame.Position = UDim2.new(0, 90, 0.5, -250)
+MenuFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+MenuFrame.BackgroundTransparency = 0.05
 MenuFrame.BorderSizePixel = 0
 MenuFrame.Visible = false
 MenuFrame.Parent = DeltaGUI
@@ -60,7 +62,7 @@ local TitleBar = Instance.new("Frame")
 TitleBar.Name = "TitleBar"
 TitleBar.Size = UDim2.new(1, 0, 0, 40)
 TitleBar.Position = UDim2.new(0, 0, 0, 0)
-TitleBar.BackgroundColor3 = Color3.fromRGB(0, 140, 230)
+TitleBar.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
 TitleBar.BackgroundTransparency = 0.05
 TitleBar.BorderSizePixel = 0
 TitleBar.Parent = MenuFrame
@@ -100,9 +102,9 @@ local ScrollingFrame = Instance.new("ScrollingFrame")
 ScrollingFrame.Size = UDim2.new(1, -20, 1, -55)
 ScrollingFrame.Position = UDim2.new(0, 10, 0, 45)
 ScrollingFrame.BackgroundTransparency = 1
-ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 600)
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 800)
 ScrollingFrame.ScrollBarThickness = 8
-ScrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 180, 255)
+ScrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 100, 100)
 ScrollingFrame.Parent = MenuFrame
 
 local UIListLayout = Instance.new("UIListLayout")
@@ -288,16 +290,14 @@ local function setupFly()
         local rootPart = LocalPlayer.Character.HumanoidRootPart
         
         bodyVelocity = Instance.new("BodyVelocity")
-        bodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)
+        bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
         bodyVelocity.Velocity = Vector3.new(0, 0, 0)
         bodyVelocity.Parent = rootPart
         
-        bodyPosition = Instance.new("BodyPosition")
-        bodyPosition.MaxForce = Vector3.new(4000, 4000, 4000)
-        bodyPosition.Position = rootPart.Position
-        bodyPosition.D = 500
-        bodyPosition.P = 3000
-        bodyPosition.Parent = rootPart
+        bodyAngularVelocity = Instance.new("BodyAngularVelocity")
+        bodyAngularVelocity.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        bodyAngularVelocity.AngularVelocity = Vector3.new(0, 0, 0)
+        bodyAngularVelocity.Parent = rootPart
     end
 end
 
@@ -306,9 +306,9 @@ local function removeFly()
         bodyVelocity:Destroy()
         bodyVelocity = nil
     end
-    if bodyPosition then
-        bodyPosition:Destroy()
-        bodyPosition = nil
+    if bodyAngularVelocity then
+        bodyAngularVelocity:Destroy()
+        bodyAngularVelocity = nil
     end
 end
 
@@ -325,30 +325,127 @@ FlyButton.MouseButton1Click:Connect(function()
     end
 end)
 
+local NoClipButton = createButton("NoClipButton", "NOCLIP: OFF", nil, "👻")
+NoClipButton.MouseButton1Click:Connect(function()
+    noClipEnabled = not noClipEnabled
+    NoClipButton.Text = noClipEnabled and "👻 NOCLIP: ON" or "👻 NOCLIP: OFF"
+    NoClipButton.BackgroundColor3 = noClipEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(45, 45, 65)
+end)
+
+local InfiniteJumpButton = createButton("InfiniteJumpButton", "INF JUMP: OFF", nil, "🦘")
+InfiniteJumpButton.MouseButton1Click:Connect(function()
+    infiniteJumpEnabled = not infiniteJumpEnabled
+    InfiniteJumpButton.Text = infiniteJumpEnabled and "🦘 INF JUMP: ON" or "🦘 INF JUMP: OFF"
+    InfiniteJumpButton.BackgroundColor3 = infiniteJumpEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(45, 45, 65)
+    
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.JumpHeight = infiniteJumpEnabled and math.huge or 7.2
+    end
+end)
+
+local TeleportButton = createButton("TeleportButton", "TELEPORT TO PLAYERS", nil, "📍")
+TeleportButton.MouseButton1Click:Connect(function()
+    local players = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            table.insert(players, player)
+        end
+    end
+    
+    if #players > 0 then
+        local targetPlayer = players[math.random(1, #players)]
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
+        end
+    end
+end)
+
+local HealthButton = createButton("HealthButton", "MAX HEALTH: OFF", nil, "❤️")
+HealthButton.MouseButton1Click:Connect(function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        local humanoid = LocalPlayer.Character.Humanoid
+        humanoid.MaxHealth = 2500
+        humanoid.Health = 2500
+        HealthButton.Text = "❤️ HEALTH: 2500"
+        HealthButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+    end
+end)
+
+local GodModeButton = createButton("GodModeButton", "GOD MODE: OFF", nil, "🛡️")
+local godModeEnabled = false
+GodModeButton.MouseButton1Click:Connect(function()
+    godModeEnabled = not godModeEnabled
+    GodModeButton.Text = godModeEnabled and "🛡️ GOD MODE: ON" or "🛡️ GOD MODE: OFF"
+    GodModeButton.BackgroundColor3 = godModeEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(45, 45, 65)
+    
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        if godModeEnabled then
+            LocalPlayer.Character.Humanoid.MaxHealth = math.huge
+            LocalPlayer.Character.Humanoid.Health = math.huge
+        else
+            LocalPlayer.Character.Humanoid.MaxHealth = 100
+            LocalPlayer.Character.Humanoid.Health = 100
+        end
+    end
+end)
+
+local ResetButton = createButton("ResetButton", "RESET CHARACTER", Color3.fromRGB(255, 70, 70), "💀")
+ResetButton.MouseButton1Click:Connect(function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.Health = 0
+    end
+end)
+
+local ClickTPButton = createButton("ClickTPButton", "CLICK TP: OFF", nil, "🖱️")
+local clickTPEnabled = false
+ClickTPButton.MouseButton1Click:Connect(function()
+    clickTPEnabled = not clickTPEnabled
+    ClickTPButton.Text = clickTPEnabled and "🖱️ CLICK TP: ON" or "🖱️ CLICK TP: OFF"
+    ClickTPButton.BackgroundColor3 = clickTPEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(45, 45, 65)
+end)
+
+UserInputService.InputBegan:Connect(function(input)
+    if clickTPEnabled and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local hit = game.Players.LocalPlayer:GetMouse().Hit
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(hit.Position)
+        end
+    end
+end)
+
 UserInputService.JumpRequest:Connect(function()
-    if flyEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and bodyPosition then
-        local rootPart = LocalPlayer.Character.HumanoidRootPart
-        bodyPosition.Position = bodyPosition.Position + Vector3.new(0, 16, 0)
+    if flyEnabled and bodyVelocity then
+        local currentVel = bodyVelocity.Velocity
+        bodyVelocity.Velocity = Vector3.new(currentVel.X, flySpeed, currentVel.Z)
+        wait(0.3)
+        if bodyVelocity then
+            bodyVelocity.Velocity = Vector3.new(currentVel.X, 0, currentVel.Z)
+        end
     end
 end)
 
 RunService.Heartbeat:Connect(function()
-    if flyEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and bodyPosition then
-        local rootPart = LocalPlayer.Character.HumanoidRootPart
+    if flyEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and bodyVelocity then
         local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
         local camera = workspace.CurrentCamera
         
         if humanoid then
             local moveVector = humanoid.MoveDirection
-            local cameraDirection = camera.CFrame.LookVector
-            local rightVector = camera.CFrame.RightVector
             
-            local direction = (cameraDirection * moveVector.Z) + (rightVector * moveVector.X)
-            
-            if direction.Magnitude > 0 then
-                bodyPosition.Position = bodyPosition.Position + (direction * 0.5)
+            if moveVector.Magnitude > 0 then
+                local cameraDirection = (camera.CFrame.LookVector * Vector3.new(1, 0, 1)).Unit
+                local rightVector = camera.CFrame.RightVector
+                
+                local direction = (cameraDirection * -moveVector.Z) + (rightVector * moveVector.X)
+                bodyVelocity.Velocity = Vector3.new(direction.X * flySpeed, bodyVelocity.Velocity.Y, direction.Z * flySpeed)
+            else
+                bodyVelocity.Velocity = Vector3.new(0, bodyVelocity.Velocity.Y, 0)
             end
         end
+    end
+    
+    if godModeEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.Health = LocalPlayer.Character.Humanoid.MaxHealth
     end
 end)
 
@@ -371,14 +468,24 @@ FloatingButton.MouseButton1Click:Connect(function()
         MenuFrame.Position = UDim2.new(0, 225, 0.5, 0)
         MenuFrame.Visible = true
         TweenService:Create(MenuFrame, TweenInfo.new(0.3), {
-            Size = UDim2.new(0, 300, 0, 400),
-            Position = UDim2.new(0, 90, 0.5, -200)
+            Size = UDim2.new(0, 300, 0, 500),
+            Position = UDim2.new(0, 90, 0.5, -250)
         }):Play()
     else
         TweenService:Create(MenuFrame, TweenInfo.new(0.3), {
             Size = UDim2.new(0, 0, 0, 0),
             Position = UDim2.new(0, 225, 0.5, 0)
         }):Play()
+    end
+end)
+
+RunService.Stepped:Connect(function()
+    if noClipEnabled and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide then
+                part.CanCollide = false
+            end
+        end
     end
 end)
 
@@ -390,6 +497,13 @@ LocalPlayer.CharacterAdded:Connect(function(character)
     if flyEnabled then
         wait(1)
         setupFly()
+    end
+    if infiniteJumpEnabled then
+        character.Humanoid.JumpHeight = math.huge
+    end
+    if godModeEnabled then
+        character.Humanoid.MaxHealth = math.huge
+        character.Humanoid.Health = math.huge
     end
 end)
 
